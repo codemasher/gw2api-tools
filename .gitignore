@@ -1,0 +1,13 @@
+#################
+## PHPStorm
+#################
+
+.idea/
+
+#################
+## Misc
+#################
+
+img/background/*.png
+img/cache/*.png
+img/foreground/*.png
