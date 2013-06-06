@@ -3,7 +3,7 @@
  * gw2emblems.php
  * created: 06.06.13
  *
- * Approach to create guild img on the fly using the gw2 color API
+ * Approach to create guild emblems on the fly using the gw2 guild & color APIs
  * Based on the script by Moturdrn.2837
  * https://gist.github.com/moturdrn/9d03a0cd4967828ac6cc
  *
@@ -13,6 +13,9 @@
  *
  * Moturdrn.2837 (foreground images only, combined, 2 parts, used by the script)
  * https://docs.google.com/file/d/0B5NobLNMdY89TVFiU3NjSUdCOEE/edit
+ *
+ * see it live:
+ * http://gw2.chillerlan.net/examples/gw2emblems.php?guild_id=75FD83CF-0C45-4834-BC4C-097F93A487AF
  *
  */
 

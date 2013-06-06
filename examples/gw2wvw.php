@@ -4,6 +4,13 @@
  * created: 05.06.13
  *
  * note: this is just an example, there's not much error handling in here to keep the code as clean as possible
+ *
+ * see it live:
+ * http://gw2.chillerlan.net/examples/gw2wvw.php
+ *
+ * in use over here:
+ * https://chillerlan.net/gw2/wvw.html
+ *
  */
 
 /*
@@ -51,8 +58,7 @@ foreach($matches['wvw_matches'] as $m){
 $matchdata = gw2_api_request('wvw/match_details.json?match_id='.$match);
 $matchdata = parse_stats($matchdata, $match_worlds, $worlds);
 
-// i'll leave it up to you how to use the matchdata, you can see an example on my website:
-// https://chillerlan.net/gw2/wvw.html
+// i'll leave it up to you how to use the matchdata
 
 // prepare the HTML
 $html = '<!DOCTYPE html>

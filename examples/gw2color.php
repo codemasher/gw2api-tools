@@ -2,6 +2,12 @@
 /**
  * gw2color.php
  * created: 05.06.13
+ *
+ * A list of dye colors using the GW2 color API
+ *
+ * see it live:
+ * http://gw2.chillerlan.net/examples/gw2color.php
+ *
  */
 
 /*
