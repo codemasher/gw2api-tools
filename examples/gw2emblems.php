@@ -61,7 +61,7 @@ if(!$data || !is_array($data) || in_array('error', $data)){
 	image_error();
 }
 
-// it's highly recommended to pull the color data (~160kb) from a database or local .json since it's pretty static
+// it's highly recommended to pull the color data (~160kb API response) from a database or local .json since it's pretty static
 $colors = file_get_contents('../json/gw2_colors.json');
 $colors = json_decode($colors, 1);
 
