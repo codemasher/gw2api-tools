@@ -9,10 +9,10 @@
  *
  * Image parts download provided by:
  * Dr Ishmael.9685 (original ingame textures, 3 parts, contains the background images used by this script)
- * https://docs.google.com/file/d/0B2y4ZZsTcmTXQ0JYdkVDbmtSbkE/edit
+ * https://docs.google.com/file/d/0B5NobLNMdY89TVFiU3NjSUdCOEE/edit
  *
  * Moturdrn.2837 (foreground images only, combined, 2 parts, used by the script)
- * https://docs.google.com/file/d/0B5NobLNMdY89TVFiU3NjSUdCOEE/edit
+ * https://docs.google.com/file/d/0B2y4ZZsTcmTXa25Fa2huemx2MjA/edit
  *
  * see it live:
  * http://gw2.chillerlan.net/examples/gw2emblems.php?guild_id=75FD83CF-0C45-4834-BC4C-097F93A487AF
