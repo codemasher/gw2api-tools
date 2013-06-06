@@ -10,10 +10,8 @@
 
 function image_error(){
 	global $cfg;
-	$img = imagecreatefrompng($cfg['error_image']);
 	header('Content-type: image/png');
-	imagepng($img);
-	imagedestroy($img);
+	readfile($cfg['error_image']);
 	exit();
 }
 
