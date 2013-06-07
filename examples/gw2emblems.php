@@ -120,10 +120,12 @@ imagecopy($img, $fi1, 0, 0, 0, 0, 256, 256);
 if($size < 256){
 	$thumb = imagecreate($size, $size);
 	imagecopyresampled($thumb, $img, 0, 0, 0, 0, $size, $size, 256, 256);
+	imageantialias($thumb,true);
 	imagepng($thumb, $cache);
 	imagedestroy($thumb);
 }
 else{
+	imageantialias($img,true);
 	imagepng($img, $cache);
 }
 
