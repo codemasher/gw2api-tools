@@ -5,11 +5,18 @@ A collection of helpful stuff for use with the [GW2-API](https://forum-en.guildw
 ## Requirements
 - **PHP 5.4+**
 - **MySQL** or **MariaDB**
+
+###Why PHP 5.4+?
+There's actually no specific reason except for the [fancy javascript style shorthand array syntax](http://php.net/manual/en/language.types.array.php).
  
 ##Installation
 - download the source and unzip it into a directory within your webroot
 - create tables in your database with the given SQL if needed
 - open your webbrowser and point it to any file in the /examples folder
+
+##Additional files
+- [Guild emblems](http://gw2.chillerlan.net/files/guild-emblems.zip)
+- [WvW map tiles and icons](http://gw2.chillerlan.net/files/wvw-maps.zip)
 
 ##Thanks
 
