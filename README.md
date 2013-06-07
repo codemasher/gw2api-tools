@@ -3,6 +3,7 @@
 A collection of helpful stuff for use with the [GW2-API](https://forum-en.guildwars2.com/forum/community/api/API-Documentation).
 
 ## Requirements
+- A local webserver like [XAMPP](http://www.apachefriends.org/xampp.html) is helpful ;)
 - **PHP 5.4+**
 - **MySQL** or **MariaDB**
 
