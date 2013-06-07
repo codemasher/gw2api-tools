@@ -7,7 +7,7 @@ A collection of helpful stuff for use with the [GW2-API](https://forum-en.guildw
 - **MySQL** or **MariaDB**
 
 ###Why PHP 5.4+?
-There's actually no specific reason except for the [fancy javascript style shorthand array syntax](http://php.net/manual/en/language.types.array.php).
+There's actually no specific reason except for the [fancy javascript/perl style shorthand array syntax](http://php.net/manual/en/language.types.array.php). You're fine with 5.2 if you change that.
  
 ##Installation
 - download the source and unzip it into a directory within your webroot
