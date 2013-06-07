@@ -8,10 +8,14 @@
  * TODO
  */
 
-function image_error(){
+function image_error($size){
 	global $cfg;
 	header('Content-type: image/png');
-	readfile($cfg['error_image']);
+	$img = imagecreatefrompng($cfg['error_image']);
+	$thumb = imagecreatetruecolor($size, $size);
+	imagecopyresampled($thumb, $img, 0, 0, 0, 0, $size, $size, 256, 256);
+	imagepng($thumb);
+	imagedestroy($thumb);
 	exit();
 }
 

@@ -37,13 +37,13 @@ $cfg['fg_path'] = '../img/foreground/';
 $cfg['ca_path'] = '../img/cache/';
 $cfg['error_image'] = '../img/404-quaggan.png';
 
-// i cant't work without guild data...
-if(!isset($_GET['guild_id']) || empty($_GET['guild_id'])){
-	image_error();
-}
-
 // get the size and clamp if needed
 $size = isset($_GET['size']) && !empty($_GET['size']) ? max(40, min(256, intval($_GET['size']))) : 256;
+
+// i cant't work without guild data...
+if(!isset($_GET['guild_id']) || empty($_GET['guild_id'])){
+	image_error($size);
+}
 
 // cache path/image name
 $cache = $cfg['ca_path'].md5($_GET['guild_id'].$size).'.png';
@@ -58,7 +58,7 @@ if(is_file($cache)){
 // get guild data. it's recommended to build a local guild database to increase performance
 $data = gw2_api_request('guild_details.json?guild_id='.$_GET['guild_id']);
 if(!$data || !is_array($data) || in_array('error', $data)){
-	image_error();
+	image_error($size);
 }
 
 // it's highly recommended to pull the color data (~160kb API response) from a database or local .json since it's pretty static
@@ -76,7 +76,7 @@ $fi1_p = $cfg['fg_path'].$data['emblem']['foreground_id'].'a.png';
 $fi2_p = $cfg['fg_path'].$data['emblem']['foreground_id'].'b.png';
 
 if(!is_file($img_p) || !is_file($fi1_p) || !is_file($fi2_p)){
-	image_error();
+	image_error($size);
 }
 
 // fetch the images
