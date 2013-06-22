@@ -108,7 +108,7 @@ function gw2map(map_container, language, continent_id, floor_id, region_id, map_
 	});
 
 	leaf.on("click", function(e) {
-		console.log("You clicked the map at "+map.project(e.latlng));
+		console.log("You clicked the map at "+leaf.project(e.latlng));
 	});
 
 	// get the JSON and start the action
