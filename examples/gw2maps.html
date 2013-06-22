@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Guild Wars 2 Maps API</title>
+	<link rel="stylesheet" type="text/css" href="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.css"/>
+	<link rel="stylesheet" type="text/css" href="https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia.css"/>
+	<link rel="stylesheet" type="text/css" href="https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia-italic.css"/>
+	<style type="text/css">
+		html, body{
+			margin: 0;
+			padding: 0;
+		}
+		.map{
+			height: 600px;
+		}
+		.sector_text{
+			color: #fff;
+			font-family: Menomonia;
+			font-style: italic;
+			font-size: 20px;
+			white-space: nowrap;
+		}
+	</style>
+</head>
+<body>
+	<div id="map1" class="map"></div>
+	<div id="map2" class="map"></div>
+	<div id="map3" class="map"></div>
+	<div id="map4" class="map"></div>
+	<div id="map5" class="map"></div>
+	<!-- i'm using jQuery here just for $.getJSON which happily ignores cross domain restrictions - not because i like it...  -->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+	<script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+	<script src="../js/gw2maps.js"></script>
+	<script>
+		(function(){
+			//map_container, language, continent_id, floor_id [, region_id, map_id [, poi_id, poi_type = poi, sector, skill, task]]
+			// -> data from https://api.guildwars2.com/v1/maps.json
+			gw2map("map1","en",1,-2,2,33); // single floor outside the worldmap
+			gw2map("map2","de",1,1,4,50,1057,"poi"); // map within the worldmap with poi given - especially for wiki purposes - try this in a small container
+			gw2map("map3","fr",1,1,4,15); // map within the worldmap
+			gw2map("map4","es",2,3); // specific floor within a region
+			gw2map("map5","de",1,1); // full world map, first floor without instance data (using a workaround)
+		})();
+	</script>
+</body>
+</html>
