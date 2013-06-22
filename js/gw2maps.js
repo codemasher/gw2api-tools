@@ -80,7 +80,7 @@ function gw2map(map_container, language, continent_id, floor_id, region_id, map_
 			}
 		};
 
-	//set the base tiles
+	// set the base tiles
 	L.tileLayer("https://tiles.guildwars2.com/"+continent_id+"/"+floor_id+"/{z}/{x}/{y}.jpg", {
 		minZoom: 0,
 		maxZoom: mz,
@@ -120,14 +120,12 @@ function gw2map(map_container, language, continent_id, floor_id, region_id, map_
 			clamp = data.clamped_view;
 			bounds = new L.LatLngBounds(leaf.unproject([clamp[0][0], clamp[1][1]], mz), leaf.unproject([clamp[1][0], clamp[0][1]], mz));
 			leaf.setMaxBounds(bounds).fitBounds(bounds);
-			//leaf.setZoom(mz);
 		}
 		// we display a specific map? so lets use the maps bounds
 		else if(region_id && map_id){
 			clamp = data.regions[region_id].maps[map_id].continent_rect;
 			bounds = new L.LatLngBounds(leaf.unproject([clamp[0][0], clamp[1][1]], mz), leaf.unproject([clamp[1][0], clamp[0][1]], mz)).pad(0.2);
-			leaf.setMaxBounds(bounds);
-			leaf.fitBounds(bounds);
+			leaf.setMaxBounds(bounds).fitBounds(bounds);
 			// we have also a poi? lets find and display it...
 			if(poi_id && poi_type){
 				var a, n;
