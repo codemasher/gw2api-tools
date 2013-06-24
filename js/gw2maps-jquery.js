@@ -12,7 +12,9 @@
  */
 
 /**
- * @param options {
+ * @param container_class
+ *
+ * dataset {
  *     map_container: string "container_id_mandatory",
  *     language: int (1=de, 2=en, 3=es, 4=fr),
  *     continent_id: (1=Tyria ,2=The Mists),
