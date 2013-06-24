@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Guild Wars 2 Maps API</title>
+</head>
+<body>
+	<!-- map within the worldmap with poi given - especially for wiki purposes - try this in a small container -->
+	<div class="gw2map" data-language="1" data-region_id="4" data-map_id="50" data-poi_id="1057" data-poi_type="1" data-width="250" data-height="250" data-disable_controls="1"></div>
+	<!-- single floor outside the worldmap -->
+	<div class="gw2map" data-floor_id="-2" data-region_id="2" data-map_id="33"></div>
+	<!-- map within the worldmap -->
+	<div class="gw2map" data-language="4" data-region_id="1" data-map_id="26"></div>
+	<!-- specific floor within a region -->
+	<div class="gw2map" data-language="3" data-continent_id="2" data-floor_id="3"></div>
+	<!-- full world map -->
+	<div class="gw2map" data-width="100" data-w_percent="1" data-height="600"></div>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
+	<script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+	<script src="../js/gw2maps-prototype.js"></script>
+	<script>
+		document.observe('dom:loaded',function(){
+			// used in the wiki map widget since we cannot access the header there
+			[
+				"http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.css",
+				"https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia.css",
+				"https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia-italic.css",
+				"http://gw2.chillerlan.net/css/gw2maps.css"
+			].
+			each(function(style){
+				$$("head")[0].insert(new Element("link", {"rel":"stylesheet", "type":"text/css", "href":style}));
+			});
+
+			gw2maps(".gw2map");
+		});
+	</script>
+</body>
+</html>
