@@ -75,19 +75,19 @@ function gw2maps(container_class){
 				// loop out pois
 				$.each(map.points_of_interest, function(){
 					if(this.type == "waypoint"){
-						waypoints.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: this.name, icon: icon_wp}).bindPopup(this.name));
+						waypoints.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: this.name, icon: icon_wp}).bindPopup(this.name+"<br />id: "+this.poi_id));
 					}
 					if(this.type == "landmark"){
 						pois.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: this.name, icon: icon_poi})
-							.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(this.name)+'" target="_blank">'+this.name+"</a>"));
+							.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(this.name)+'" target="_blank">'+this.name+"</a><br />id: "+this.poi_id));
 					}
 					if(this.type == "vista"){
-						vistas.addLayer(L.marker(leaf.unproject(this.coord, mz), {icon: icon_vista}));
+						vistas.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: "id:"+this.poi_id, icon: icon_vista}));
 					}
 				});
 				// sector names
 				$.each(map.sectors, function(){
-					sectors.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: this.name, icon: L.divIcon({className: "sector_text", html: this.name})}));
+					sectors.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: this.name+", id:"+this.sector_id, icon: L.divIcon({className: "sector_text", html: this.name})}));
 				});
 				// skill challenges
 				$.each(map.skill_challenges, function(){
@@ -96,7 +96,7 @@ function gw2maps(container_class){
 				// tasks (hearts)
 				$.each(map.tasks, function(){
 					tasks.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: this.objective, icon: icon_heart})
-						.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(this.objective.replace(/\.$/, ""))+'" target="_blank">'+this.objective+"</a> ("+this.level+")"));
+						.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(this.objective.replace(/\.$/, ""))+'" target="_blank">'+this.objective+"</a> ("+this.level+")<br />id: "+this.task_id));
 				});
 
 			},

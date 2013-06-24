@@ -84,19 +84,19 @@ function gw2maps(container_class){
 				// loop out pois
 				map.points_of_interest.each(function(p){
 					if(p.type == "waypoint"){
-						waypoints.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: p.name, icon: icon_wp}).bindPopup(p.name));
+						waypoints.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: p.name, icon: icon_wp}).bindPopup(p.name+"<br />id: "+p.poi_id));
 					}
 					if(p.type == "landmark"){
 						pois.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: p.name, icon: icon_poi})
-							.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(p.name)+'" target="_blank">'+p.name+"</a>"));
+							.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(p.name)+'" target="_blank">'+p.name+"</a><br />id: "+p.poi_id));
 					}
 					if(p.type == "vista"){
-						vistas.addLayer(L.marker(leaf.unproject(p.coord, mz), {icon: icon_vista}));
+						vistas.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: "id:"+p.poi_id, icon: icon_vista}));
 					}
 				});
 				// sector names
 				map.sectors.each(function(p){
-					sectors.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: p.name, icon: L.divIcon({className: "sector_text", html: p.name})}));
+					sectors.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: p.name+", id:"+p.sector_id, icon: L.divIcon({className: "sector_text", html: p.name})}));
 				});
 				// skill challenges
 				map.skill_challenges.each(function(p){
@@ -105,7 +105,7 @@ function gw2maps(container_class){
 				// tasks (hearts)
 				map.tasks.each(function(p){
 					tasks.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: p.objective, icon: icon_heart})
-						.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(p.objective.replace(/\.$/, ""))+'" target="_blank">'+p.objective+"</a> ("+p.level+")"));
+						.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(p.objective.replace(/\.$/, ""))+'" target="_blank">'+p.objective+"</a> ("+p.level+")<br />id: "+p.task_id));
 				});
 			};
 
