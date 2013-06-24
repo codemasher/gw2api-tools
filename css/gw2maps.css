@@ -1,0 +1,13 @@
+html, body{
+	margin: 0;
+	padding: 0;
+	height: 100%;
+}
+
+.sector_text{
+	color: #fff;
+	font-family: Menomonia, sans-serif;
+	font-style: italic;
+	font-size: 20px;
+	white-space: nowrap;
+}
