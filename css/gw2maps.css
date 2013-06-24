@@ -1,13 +1,19 @@
-html, body{
-	margin: 0;
-	padding: 0;
-	height: 100%;
+.gw2map{
+	width: 800px;
+	height: 450px;
 }
 
 .sector_text{
 	color: #fff;
-	font-family: Menomonia, sans-serif;
+	font-family: Menomonia,sans-serif;
 	font-style: italic;
 	font-size: 20px;
 	white-space: nowrap;
+}
+
+.leaflet-popup-content-wrapper{
+	-moz-border-radius:10px;
+	-webkit-border-radius:10px;
+	-khtml-border-radius:10px;
+	border-radius:10px;
 }
