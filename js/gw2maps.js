@@ -2,6 +2,8 @@
  * gw2Maps.js
  * created: 21.06.13
  *
+ * Awesome wiki maps by Smiley
+ *
  * based on Cliff's example
  * http://jsfiddle.net/cliff/CRRGC/
  *
@@ -9,17 +11,46 @@
  * http://wiki.guildwars2.com/wiki/User:Dr_ishmael/leaflet
  */
 
-function gw2map(map_container, language, continent_id, floor_id, region_id, map_id, poi_id, poi_type){
-		// first of all determine the max zoomlevel given in continents.json - Tyria: 7, The Mists: 6
-	var mz = continent_id == 1 ? 7 : 6,
+/**
+ * @param options {
+ *     map_container: string "container_id_mandatory",
+ *     language: int (1=de, 2=en, 3=es, 4=fr),
+ *     continent_id: (1=Tyria ,2=The Mists),
+ *     floor_id: int,
+ *     region_id: non negative int,
+ *     map_id: non negative int,
+ *     poi_id: non negative int,
+ *     poi_type: int (1=poi, 2=sector, 3=task),
+ *     disable_controls: bool,
+ *     width: non negative int,
+ *     w_percent: bool,
+ *     height: non negative int,
+ *     h_percent: bool
+ *     }
+ */
+function gw2map(options){
+		// check the option values and fall back to defaults if needed
+	var	continent_id = (typeof options.continent_id === "number" && options.continent_id >=1 && options.continent_id >= 2) ? options.continent_id : 1,
+		floor_id = (typeof options.floor_id === "number") ? options.floor_id : 2,
+		region_id = (typeof options.region_id === "number" && options.region_id >= 0) ? options.region_id : false,
+		map_id = (typeof options.map_id === "number" && options.map_id >= 0) ? options.map_id : false,
+		poi_id = (typeof options.poi_id === "number" && options.poi_id >= 0) ? options.poi_id : false,
+		poi_type = (typeof options.poi_type === "number" && options.poi_type >= 0) ? options.poi_type : false,
+		map_controls = (options.disable_controls != true),
+		w_dimension = (options.w_percent == true) ? "%" : "px",
+		h_dimension = (options.h_percent == true) ? "%" : "px",
+		width = (typeof options.width === "number" && options.width >= 0) ? options.width+w_dimension : "800px",
+		height = (typeof options.height === "number" && options.height >= 0) ? options.height+h_dimension : "450px",
+		// determine the max zoomlevel given in continents.json - Tyria: 7, The Mists: 6
+		mz = (continent_id == 1) ? 7 : 6,
 		// the map object
-		leaf = L.map(map_container, {minZoom: 0, maxZoom: mz, crs: L.CRS.Simple}),
+		leaf = L.map(options.map_container, {minZoom: 0, maxZoom: mz, crs: L.CRS.Simple, zoomControl: map_controls, attributionControl: map_controls}),
 		// some marker icons
-		icon_wp = L.icon({iconUrl: "../img/waypoint.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-		icon_poi = L.icon({iconUrl: "../img/poi.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-		icon_vista = L.icon({iconUrl: "../img/vista.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-		icon_heart = L.icon({iconUrl: "../img/heart.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-		icon_skill = L.icon({iconUrl: "../img/skill_point.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
+		icon_wp = L.icon({iconUrl: "http://gw2.chillerlan.net/img/waypoint.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
+		icon_poi = L.icon({iconUrl: "http://gw2.chillerlan.net/img/poi.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
+		icon_vista = L.icon({iconUrl: "http://gw2.chillerlan.net/img/vista.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
+		icon_heart = L.icon({iconUrl: "http://gw2.chillerlan.net/img/heart.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
+		icon_skill = L.icon({iconUrl: "http://gw2.chillerlan.net/img/skill_point.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
 		// set the layerGroups
 		vistas = L.layerGroup(),
 		pois = L.layerGroup(),
@@ -29,16 +60,6 @@ function gw2map(map_container, language, continent_id, floor_id, region_id, map_
 		sectors = L.layerGroup(),
 		// the map parser
 		parse_map = function(map){
-
-			// determine the wiki prefix
-			var wiki;
-			switch(language){
-				case "de": wiki = "-de"; break;
-				case "es": wiki = "-es"; break;
-				case "fr": wiki = "-fr"; break;
-				default: wiki = ""; break;
-			}
-
 			// loop out pois
 			$.each(map.points_of_interest, function(){
 				if(this.type == "waypoint"){
@@ -78,24 +99,46 @@ function gw2map(map_container, language, continent_id, floor_id, region_id, map_
 			if(region_id && map_id || leaf.getZoom() > 4){
 				sectors.addTo(leaf);
 			}
-		};
+		},
+		// prepare i18n
+		wiki,
+		lang,
+		text = {};
 
-	// set the base tiles
-	L.tileLayer("https://tiles.guildwars2.com/"+continent_id+"/"+floor_id+"/{z}/{x}/{y}.jpg", {
+	// first of all determine the language and wiki prefix - integer for wiki security reasons (using filter type integer in the widget extension)
+	switch(options.language){
+		case 1: lang = "de"; wiki = "-de"; break;
+		case 2: lang = "en"; wiki = ""; break;
+		case 3: lang = "es"; wiki = "-es"; break;
+		case 4: lang = "fr"; wiki = "-fr"; break;
+		default: lang = "en"; wiki = ""; break;
+	}
+
+	// set the map container to the given size
+	$("#"+options.map_container).css("width",width).css("height",height);
+
+	// set the base tiles and add a little copyright info
+	L.tileLayer("https://tiles.guildwars2.com/{continent_id}/{floor_id}/{z}/{x}/{y}.jpg", {
 		minZoom: 0,
 		maxZoom: mz,
-		continuousWorld: true
+		continuousWorld: true,
+		continent_id: continent_id,
+		floor_id: floor_id,
+		attribution: 'Map data and imagery: <a href="https://forum-en.guildwars2.com/forum/community/api/API-Documentation" target="_blank">GW2 Maps API</a>, '+
+			'&copy;<a href="http://www.arena.net/" target="_blank">ArenaNet</a>'
 	}).addTo(leaf);
 
 	// add a Layer control
-	L.control.layers(null, {
-		"Points of Interest": pois,
-		"Sector Names": sectors,
-		"Skill Challenges": skills,
-		"Tasks": tasks,
-		"Vistas": vistas,
-		"Waypoints": waypoints
-	}).addTo(leaf);
+	if(map_controls){
+		L.control.layers(null, {
+			"Points of Interest": pois,
+			"Sector Names": sectors,
+			"Skill Challenges": skills,
+			"Tasks": tasks,
+			"Vistas": vistas,
+			"Waypoints": waypoints
+		}).addTo(leaf);
+	}
 
 	// magically display/remove sector names
 	leaf.on("zoomend", function(){
@@ -107,14 +150,14 @@ function gw2map(map_container, language, continent_id, floor_id, region_id, map_
 		}
 	});
 
+	// you may specify more mapevent handlers over here - for example a click handler:
 	leaf.on("click", function(e) {
 		console.log("You clicked the map at "+leaf.project(e.latlng));
 	});
 
 	// get the JSON and start the action
-	$.getJSON("https://api.guildwars2.com/v1/map_floor.json?continent_id="+continent_id+"&floor="+floor_id+"&lang="+language, function(data){
+	$.getJSON("https://api.guildwars2.com/v1/map_floor.json?continent_id="+continent_id+"&floor="+floor_id+"&lang="+lang, function(data){
 		var bounds, clamp;
-
 		// the map has a clamped view? ok, we use this as bound
 		if(data.clamped_view){
 			clamp = data.clamped_view;
@@ -130,16 +173,16 @@ function gw2map(map_container, language, continent_id, floor_id, region_id, map_
 			if(poi_id && poi_type){
 				var a, n;
 				switch(poi_type){
-					//case "skill": t = data.regions[region_id].maps[map_id].skill_challenges; break; //skill challenges don't have ids yet
-					case "poi":
+					//case "skill": a = data.regions[region_id].maps[map_id].skill_challenges; break; //skill challenges don't have ids yet
+					case 1:
 						a = data.regions[region_id].maps[map_id].points_of_interest;
 						n = "poi_id";
 						break;
-					case "sector":
+					case 2:
 						a = data.regions[region_id].maps[map_id].sectors;
 						n = "sector_id";
 						break;
-					case "task":
+					case 3:
 						a = data.regions[region_id].maps[map_id].tasks;
 						n = "task_id";
 						break;
@@ -164,17 +207,6 @@ function gw2map(map_container, language, continent_id, floor_id, region_id, map_
 		if(region_id && map_id){
 			parse_map(data.regions[region_id].maps[map_id]);
 		}
-		// little workaround to display the 1st floor of the worldmap without instance data
-		else if(continent_id == 1 && floor_id == 1){
-			$.each(data.regions, function(){
-				$.each(this.maps, function(i, m){
-					//try jQuery.inArray(i, [...]) != -1 instead... jQuery sucks, it reports -1 for all iterations -.-
-					if(in_array(i, [15,17,19,20,21,22,23,24,25,26,27,28,29,30,31,32,34,35,39,51,53,54,62,65,73,873,18,50,91,139,218,326,807])){
-						parse_map(m);
-					}
-				});
-			});
-		}
 		// else render anything we get
 		else{
 			$.each(data.regions, function(){
@@ -184,45 +216,4 @@ function gw2map(map_container, language, continent_id, floor_id, region_id, map_
 			});
 		}
 	});
-}
-
-/**
- *  excerpts from phpJS
- *  @link http://phpjs.org
- */
-function in_array(needle, haystack, argStrict){
-	// http://kevin.vanzonneveld.net
-	// +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	// +   improved by: vlado houba
-	// +   input by: Billy
-	// +   bugfixed by: Brett Zamir (http://brett-zamir.me)
-	// *     example 1: in_array('van', ['Kevin', 'van', 'Zonneveld']);
-	// *     returns 1: true
-	// *     example 2: in_array('vlado', {0: 'Kevin', vlado: 'van', 1: 'Zonneveld'});
-	// *     returns 2: false
-	// *     example 3: in_array(1, ['1', '2', '3']);
-	// *     returns 3: true
-	// *     example 3: in_array(1, ['1', '2', '3'], false);
-	// *     returns 3: true
-	// *     example 4: in_array(1, ['1', '2', '3'], true);
-	// *     returns 4: false
-	var key = '',
-		strict = !!argStrict;
-
-	if(strict){
-		for(key in haystack){
-			if(haystack[key] === needle){
-				return true;
-			}
-		}
-	}
-	else{
-		for(key in haystack){
-			if(haystack[key] == needle){
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
