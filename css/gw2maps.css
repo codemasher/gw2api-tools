@@ -1,6 +1,7 @@
 .gw2map{
 	width: 800px;
 	height: 450px;
+	background-color: #fff;
 }
 
 .sector_text{
@@ -11,9 +12,39 @@
 	white-space: nowrap;
 }
 
-.leaflet-popup-content-wrapper{
-	-moz-border-radius:10px;
-	-webkit-border-radius:10px;
-	-khtml-border-radius:10px;
-	border-radius:10px;
+.table-row{
+	display: table-row;
+}
+
+.table-cell{
+	display: table-cell;
+	vertical-align: top;
+}
+
+.linkbox{
+	overflow: scroll;
+	overflow-x: auto;
+	overflow-y: scroll;
+	padding: 0 .25em 0 .25em;
+}
+
+.linkbox > div{
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.linkbox > div.header{
+	cursor: default;
+	font-size: 200%;
+	font-weight: bold;
+	padding: 0.25em 0 0.25em 0;
+}
+
+.linkbox > div.header.sub{
+	font-size: 150%;
+	padding: 0.25em 0 0.25em 0;
+}
+
+.linkbox > div:not(.header):not(.sub):hover{
+	background-color: #ccc;
 }
