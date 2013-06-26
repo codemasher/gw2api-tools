@@ -11,11 +11,18 @@
  * http://wiki.guildwars2.com/wiki/User:Dr_ishmael/leaflet
  */
 
+/*
+ * TODO
+ *
+ * switch floors for maps with multiple floors e.g. like Rata Sum
+ * i18n for french and spanish
+ */
+
 /**
- * @param container_class
+ * @param container_class - the class selector of the map containers
+ * @param i18n - an object containing the language strings (currently unused)
  *
  * dataset {
- *     map_container: string "container_id_mandatory",
  *     language: int (1=de, 2=en, 3=es, 4=fr),
  *     continent_id: (1=Tyria ,2=The Mists),
  *     floor_id: int,
@@ -28,11 +35,12 @@
  *     w_percent: bool,
  *     height: non negative int,
  *     h_percent: bool
+ *     linkbox: int
  *     }
  */
-function gw2maps(container_class){
+function gw2maps(container_class, i18n){
 	$(container_class).each(function(i,c){
-		// make sure that any dataset values are number
+		// make sure that any dataset values are number - for wiki security reasons (using filter type integer in the widget extension)
 		// i don't bother reading the elements dataset for compatibility reasons
 		var options = {};
 		$.each(c.attributes, function(j,e){
@@ -41,119 +49,257 @@ function gw2maps(container_class){
 			}
 		});
 
+		// prepare i18n
+		// this object could also be put outta here and the specific part of it passed as second parameter to the function
+		// when passing that thing as parameter, you must also remove or comment the switch below
+		// it would reduce the code but also the flexibility - it's your choice ;)
+		i18n = {
+			de:{
+				lang:"de",
+				wiki:"http://wiki-de.guildwars2.com/wiki/",
+				icon_poi:{link:"http://wiki-de.guildwars2.com/images/0/0f/Sehenswürdigkeit_Icon.png", size:[16,16]},
+				icon_skill:{link:"http://wiki-de.guildwars2.com/images/c/c3/Fertigkeitspunkt_Icon.png", size:[20,20]},
+				icon_task:{link:"http://wiki-de.guildwars2.com/images/b/b7/Aufgabe_Icon.png", size:[20,20]},
+				icon_vista:{link:"http://wiki-de.guildwars2.com/images/9/9f/Aussichtspunkt_Icon.png", size:[20,20]},
+				icon_waypoint:{link:"http://wiki-de.guildwars2.com/images/d/df/Wegmarke_Icon.png", size:[24,24]},
+				errortile:"http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+				poi:"Sehenswürdigkeiten",
+				sector:"Zonen",
+				skill:"Fertigkeitspunkte",
+				task:"Aufgaben",
+				vista:"Aussichtspunkte",
+				waypoint:"Wegpunkte",
+				attribution:"Kartendaten und -bilder"
+			},
+			en:{
+				lang:"en",
+				wiki:"http://wiki.guildwars2.com/wiki/",
+				icon_poi:{link:"http://wiki.guildwars2.com/images/f/fb/Point_of_interest.png", size:[20,20]},
+				icon_skill:{link:"http://wiki.guildwars2.com/images/8/84/Skill_point.png", size:[20,20]},
+				icon_task:{link:"http://wiki.guildwars2.com/images/f/f8/Complete_heart_(map_icon).png", size:[20,20]},
+				icon_vista:{link:"http://wiki.guildwars2.com/images/d/d9/Vista.png", size:[20,20]},
+				icon_waypoint:{link:"http://wiki.guildwars2.com/images/d/d2/Waypoint_(map_icon).png", size:[20,20]},
+				errortile:"http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+				poi:"Points of Interest",
+				sector:"Sector Names",
+				skill:"Skill Challenges",
+				task:"Tasks",
+				vista:"Vistas",
+				waypoint:"Waypoints",
+				attribution:"Map data and imagery"
+			},
+			es:{
+				lang:"es",
+				wiki:"http://wiki-es.guildwars2.com/wiki/",
+				icon_poi:{link:"", size:[20,20]},
+				icon_skill:{link:"", size:[20,20]},
+				icon_task:{link:"", size:[20,20]},
+				icon_vista:{link:"", size:[20,20]},
+				icon_waypoint:{link:"", size:[20,20]},
+				errortile:"http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+				poi:"poi-es",
+				sector:"sector-es",
+				skill:"skill-es",
+				task:"task-es",
+				vista:"vista-es",
+				waypoint:"waypoint-es",
+				attribution:"attribution-es"
+			},
+			fr:{
+				lang:"fr",
+				wiki:"http://wiki-fr.guildwars2.com/wiki/",
+				icon_poi:{link:"http://wiki-fr.guildwars2.com/images/d/d2/Icône_site_remarquable_découvert.png", size:[20,20]},
+				icon_skill:{link:"http://wiki-fr.guildwars2.com/images/5/5c/Progression_défi.png", size:[20,20]},
+				icon_task:{link:"http://wiki-fr.guildwars2.com/images/a/af/Icône_coeur_plein.png", size:[20,20]},
+				icon_vista:{link:"http://wiki-fr.guildwars2.com/images/8/82/Icône_panorama.png", size:[20,20]},
+				icon_waypoint:{link:"http://wiki-fr.guildwars2.com/images/5/56/Progression_passage.png", size:[20,20]},
+				errortile:"http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+				poi:"Sites remarquables",
+				sector:"Secteurs",
+				skill:"Défis de compétences",
+				task:"Cœurs",
+				vista:"Panoramas",
+				waypoint:"Points de passage",
+				attribution:"attribution-fr"
+			}
+		};
+
+		// first of all determine the language (obsolete if i18n is passed as 2nd param)
+		switch(options.language){
+			case 1: i18n = i18n.de; break;
+			case 2: i18n = i18n.en; break;
+			case 3: i18n = i18n.es; break;
+			case 4: i18n = i18n.fr; break;
+			default: i18n = i18n.en; break;
+		}
+
 		// check the option values and fall back to defaults if needed
-		var	continent_id = (typeof options.continent_id === "number" && options.continent_id >=1 && options.continent_id >= 2) ? options.continent_id : 1,
+		var	continent_id = (typeof options.continent_id === "number" && options.continent_id >=1 && options.continent_id <= 2) ? options.continent_id : 1,
 			floor_id = (typeof options.floor_id === "number") ? options.floor_id : 2,
-			region_id = (typeof options.region_id === "number" && options.region_id >= 0) ? options.region_id : false,
-			map_id = (typeof options.map_id === "number" && options.map_id >= 0) ? options.map_id : false,
-			poi_id = (typeof options.poi_id === "number" && options.poi_id >= 0) ? options.poi_id : false,
-			poi_type = (typeof options.poi_type === "number" && options.poi_type >= 0) ? options.poi_type : false,
-			map_controls = (options.disable_controls != true),
+			region_id = (typeof options.region_id === "number" && options.region_id > 0) ? options.region_id : false,
+			map_id = (typeof options.map_id === "number" && options.map_id > 0) ? options.map_id : false,
+			poi_id = (typeof options.poi_id === "number" && options.poi_id > 0) ? options.poi_id : false,
+			poi_type = (typeof options.poi_type === "number" && options.poi_type > 0) ? options.poi_type : false,
 			w_dimension = (options.w_percent == true) ? "%" : "px",
 			h_dimension = (options.h_percent == true) ? "%" : "px",
-			width = (typeof options.width === "number" && options.width >= 0) ? options.width+w_dimension : "800px",
-			height = (typeof options.height === "number" && options.height >= 0) ? options.height+h_dimension : "450px",
+			width = (typeof options.width === "number" && options.width > 0) ? options.width+w_dimension : "800px",
+			height = (typeof options.height === "number" && options.height > 0) ? options.height+h_dimension : "450px",
+			list = (typeof options.linkbox === "number" && options.linkbox >= 100) ? options.linkbox+"px" : false ,
 			// determine the max zoomlevel given in continents.json - Tyria: 7, The Mists: 6
-			mz = (continent_id == 1) ? 7 : 6,
+			max_zoom = (continent_id == 1) ? 7 : 6,
 			// the map object
-			leaf = L.map(c, {minZoom: 0, maxZoom: mz, crs: L.CRS.Simple, zoomControl: map_controls, attributionControl: map_controls}),
-			// some marker icons
-			icon_wp = L.icon({iconUrl: "http://gw2.chillerlan.net/img/waypoint.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-			icon_poi = L.icon({iconUrl: "http://gw2.chillerlan.net/img/poi.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-			icon_vista = L.icon({iconUrl: "http://gw2.chillerlan.net/img/vista.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-			icon_heart = L.icon({iconUrl: "http://gw2.chillerlan.net/img/heart.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-			icon_skill = L.icon({iconUrl: "http://gw2.chillerlan.net/img/skill_point.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
+			map_controls = (options.disable_controls != true),
+			leaf = L.map(c, {minZoom:0, maxZoom:max_zoom, crs:L.CRS.Simple, zoomControl:map_controls, attributionControl:map_controls}),
 			// set the layerGroups
+			layers = {},
 			vistas = L.layerGroup(),
 			pois = L.layerGroup(),
 			tasks = L.layerGroup(),
 			skills = L.layerGroup(),
 			waypoints = L.layerGroup(),
 			sectors = L.layerGroup(),
-			// the map parser
-			parse_map = function(map){
-				// loop out pois
+			// a container for some links
+			linkbox = $('<div class="linkbox" style="width: '+list+'; height: '+height+';" />'),
+			up = function(coords){
+				return leaf.unproject(coords, max_zoom);
+			},
+			pan = function(e){
+				leaf.panTo(up(e.data.coords)).setZoom(max_zoom);
+				if(e.data.text){
+					L.popup({offset:new L.Point(0,-5)}).setLatLng(up(e.data.coords)).setContent(e.data.text).openOn(leaf);
+				}
+			},
+			parse_point = function(p){
+				var marker = L.marker(up(p.coords), {
+					title:p.title,
+					icon:p.icon_text && p.icon_text_class ? L.divIcon({className:p.icon_text_class, html:p.icon_text}) : L.icon({iconUrl:p.icon.link, iconSize:p.icon.size, popupAnchor:[0, -p.icon.size[1]/2]})
+				});
+				if(p.popup){
+					marker.bindPopup(p.popup);
+				}
+				p.layer.addLayer(marker);
+				linkbox.append($('<div>'+(p.icon ? '<img src="'+p.icon.link+'" style="width:16px; height:16px" />' : '')+' '+p.text+'</div>')
+					.on("click", null, {coords:p.coords, text:p.popup}, pan));
+			},
+			// the ugly, ugly map parser of lesser uglyness
+			parse_map = function (map){
+				var	popup_text;
+				// loop out the map points
+				linkbox.append('<div class="header">'+map.name+'</div>');
+				// tasks (hearts)
+				linkbox.append('<div class="header sub">'+i18n.task+'</div>');
+				$.each(map.tasks, function(){
+					popup_text = '<a href="'+i18n.wiki+encodeURIComponent(this.objective.replace(/\.$/, ""))+'" target="_blank">'+this.objective+"</a> ("+this.level+")<br />id:"+this.task_id;
+					parse_point({layer:pois, coords:this.coord, title:this.objective, icon:i18n.icon_task, text:this.objective, popup:popup_text});
+					if(poi_id && poi_type && this.task_id === poi_id){
+						pan({data:{coords:this.coord, text:popup_text}});
+					}
+				});
+				// pois
+				linkbox.append('<div class="header sub">'+i18n.poi+'</div>');
 				$.each(map.points_of_interest, function(){
 					if(this.type == "waypoint"){
-						waypoints.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: this.name, icon: icon_wp}).bindPopup(this.name+"<br />id: "+this.poi_id));
+						popup_text = this.name+"<br />id:"+this.poi_id;
+						parse_point({layer:waypoints, coords:this.coord, title:this.name, icon:i18n.icon_waypoint, text:this.name, popup:popup_text});
 					}
 					if(this.type == "landmark"){
-						pois.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: this.name, icon: icon_poi})
-							.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(this.name)+'" target="_blank">'+this.name+"</a><br />id: "+this.poi_id));
+						popup_text = '<a href="'+i18n.wiki+encodeURIComponent(this.name)+'" target="_blank">'+this.name+"</a><br />id:"+this.poi_id;
+						parse_point({layer:pois, coords:this.coord, title:this.name, icon:i18n.icon_poi, text:this.name, popup:popup_text});
 					}
 					if(this.type == "vista"){
-						vistas.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: "id:"+this.poi_id, icon: icon_vista}));
+						popup_text = "id:"+this.poi_id;
+						parse_point({layer:vistas, coords:this.coord, title:"id:"+this.poi_id, icon:i18n.icon_vista, text:this.name+' '+this.poi_id, popup:popup_text});
+					}
+					// we have also a poi? lets find and display it... (actually not beautiful...)
+					if(poi_id && poi_type && this.poi_id === poi_id){
+						pan({data:{coords:this.coord, text:popup_text}});
 					}
 				});
-				// sector names
-				$.each(map.sectors, function(){
-					sectors.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: this.name+", id:"+this.sector_id, icon: L.divIcon({className: "sector_text", html: this.name})}));
-				});
 				// skill challenges
+				linkbox.append('<div class="header sub">'+i18n.skill+'</div>');
 				$.each(map.skill_challenges, function(){
-					skills.addLayer(L.marker(leaf.unproject(this.coord, mz), {icon: icon_skill}));
+					popup_text = this.name+' '+this.coord.toString();
+					parse_point({layer:skills, coords:this.coord, title:this.coord.toString(), icon:i18n.icon_skill, text:this.name+' '+this.coord.toString(), popup:popup_text});
 				});
-				// tasks (hearts)
-				$.each(map.tasks, function(){
-					tasks.addLayer(L.marker(leaf.unproject(this.coord, mz), {title: this.objective, icon: icon_heart})
-						.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(this.objective.replace(/\.$/, ""))+'" target="_blank">'+this.objective+"</a> ("+this.level+")<br />id: "+this.task_id));
+				// sector names
+				linkbox.append('<div class="header sub">'+i18n.sector+'</div>');
+				$.each(map.sectors, function(){
+					parse_point({layer:sectors, coords:this.coord, title:this.name+", id:"+this.sector_id, icon_text:this.name, icon_text_class:"sector_text", text:this.name, popup:false});
+					if(poi_id && poi_type && this.sector_id === poi_id){
+						pan({data:{coords:this.coord, text:false}});
+					}
 				});
-
 			},
-			// prepare i18n
-			wiki,
-			lang,
-			text = {};
+			// the response parser
+			parse_response = function(data){
+				var bounds, clamp;
+				// the map has a clamped view? ok, we use this as bound
+				if(data.clamped_view){
+					clamp = data.clamped_view;
+					bounds = new L.LatLngBounds(up([clamp[0][0], clamp[1][1]]), up([clamp[1][0], clamp[0][1]]));
+					leaf.setMaxBounds(bounds).fitBounds(bounds);
+				}
+				// we display a specific map? so lets use the maps bounds
+				else if(region_id && map_id){
+					clamp = data.regions[region_id].maps[map_id].continent_rect;
+					bounds = new L.LatLngBounds(up([clamp[0][0], clamp[1][1]]), up([clamp[1][0], clamp[0][1]])).pad(0.2);
+					leaf.setMaxBounds(bounds).fitBounds(bounds);
+				}
+				// else use the texture_dims as bounds
+				else{
+					bounds = new L.LatLngBounds(up([0, data.texture_dims[1]]), up([data.texture_dims[0], 0]));
+					leaf.setMaxBounds(bounds).setView(bounds.getCenter(), 0);
+				}
 
-		// first of all determine the language and wiki prefix - integer for wiki security reasons (using filter type integer in the widget extension)
-		switch(options.language){
-			case 1: lang = "de"; wiki = "-de"; break;
-			case 2: lang = "en"; wiki = ""; break;
-			case 3: lang = "es"; wiki = "-es"; break;
-			case 4: lang = "fr"; wiki = "-fr"; break;
-			default: lang = "en"; wiki = ""; break;
+				// ok, we want to display a single map
+				if(region_id && map_id){
+					parse_map(data.regions[region_id].maps[map_id]);
+				}
+				// else render anything we get
+				else{
+					$.each(data.regions, function(){
+						$.each(this.maps, function(){
+							parse_map(this);
+						});
+					});
+				}
+			};
+
+		if(list){
+			// oh, we want a list containing a list of points - no problem! we'll wrap the map container with a table like construct.
+			var uni = Math.random().toString().replace(/\./, ""), // we need a unique container id in case we display more than one map
+				row = '<div class="table-row" style="width:'+width+'" />',
+				map_cell = '<div id="t-'+uni+'" class="table-cell" style="width:100%;" />',
+				list_cell = '<div class="table-cell" />';
+			$(c).css({"width":"100%", "height":height}).wrap(row).wrap(map_cell);
+			linkbox.insertAfter("#t-"+uni+"").wrap(list_cell);
 		}
-
-		// set the map container to the given size
-		$(c).css("width",width).css("height",height).css("background-color","#fff");
+		else{
+			// just set the map container to the given size
+			$(c).css({"width":width, "height":height});
+		}
 
 		// set the base tiles and add a little copyright info
 		L.tileLayer("https://tiles.guildwars2.com/{continent_id}/{floor_id}/{z}/{x}/{y}.jpg", {
-			minZoom: 0,
-			maxZoom: mz,
-			continuousWorld: true,
-			continent_id: continent_id,
-			floor_id: floor_id,
-			attribution: 'Map data and imagery: <a href="https://forum-en.guildwars2.com/forum/community/api/API-Documentation" target="_blank">GW2 Maps API</a>, '+
-				'&copy;<a href="http://www.arena.net/" target="_blank">ArenaNet</a>'
+			errorTileUrl:i18n.errortile,
+			minZoom:0,
+			maxZoom:max_zoom,
+			continuousWorld:true,
+			continent_id:continent_id,
+			floor_id:floor_id,
+			attribution:i18n.attribution+': <a href="https://forum-en.guildwars2.com/forum/community/api/API-Documentation" target="_blank">GW2 Maps API</a>, &copy;<a href="http://www.arena.net/" target="_blank">ArenaNet</a>'
 		}).addTo(leaf);
 
-		// add a Layer control
+		// add layers and a Layer control
+		layers[i18n.poi] = pois;
+		layers[i18n.sector] = sectors;
+		layers[i18n.skill] = skills;
+		layers[i18n.task] = tasks;
+		layers[i18n.vista] = vistas;
+		layers[i18n.waypoint] = waypoints;
 		if(map_controls){
-			L.control.layers(null, {
-				"Points of Interest": pois,
-				"Sector Names": sectors,
-				"Skill Challenges": skills,
-				"Tasks": tasks,
-				"Vistas": vistas,
-				"Waypoints": waypoints
-			}).addTo(leaf);
+			L.control.layers(null, layers).addTo(leaf);
 		}
-
-		// magically display/remove sector names
-		leaf.on("zoomend", function(){
-			if(leaf.getZoom() > 4){
-				sectors.addTo(leaf);
-			}
-			else{
-				leaf.removeLayer(sectors);
-			}
-		});
-
-		// you may specify more mapevent handlers over here - for example a click handler:
-		leaf.on("click", function(e) {
-			console.log("You clicked the map at "+leaf.project(e.latlng));
-		});
 
 		// show stuff on the map
 		pois.addTo(leaf);
@@ -168,67 +314,23 @@ function gw2maps(container_class){
 			sectors.addTo(leaf);
 		}
 
-		// get the JSON and start the action
-		$.getJSON("https://api.guildwars2.com/v1/map_floor.json?continent_id="+continent_id+"&floor="+floor_id+"&lang="+lang, function(data){
-			var bounds, clamp;
-			// the map has a clamped view? ok, we use this as bound
-			if(data.clamped_view){
-				clamp = data.clamped_view;
-				bounds = new L.LatLngBounds(leaf.unproject([clamp[0][0], clamp[1][1]], mz), leaf.unproject([clamp[1][0], clamp[0][1]], mz));
-				leaf.setMaxBounds(bounds).fitBounds(bounds);
+		// magically display/remove sector names
+		leaf.on("zoomend", function(){
+			if(leaf.getZoom() > 4){
+				sectors.addTo(leaf);
 			}
-			// we display a specific map? so lets use the maps bounds
-			else if(region_id && map_id){
-				clamp = data.regions[region_id].maps[map_id].continent_rect;
-				bounds = new L.LatLngBounds(leaf.unproject([clamp[0][0], clamp[1][1]], mz), leaf.unproject([clamp[1][0], clamp[0][1]], mz)).pad(0.2);
-				leaf.setMaxBounds(bounds).fitBounds(bounds);
-				// we have also a poi? lets find and display it...
-				if(poi_id && poi_type){
-					var a, n;
-					switch(poi_type){
-						//case "skill": a = data.regions[region_id].maps[map_id].skill_challenges; break; //skill challenges don't have ids yet
-						case 1:
-							a = data.regions[region_id].maps[map_id].points_of_interest;
-							n = "poi_id";
-							break;
-						case 2:
-							a = data.regions[region_id].maps[map_id].sectors;
-							n = "sector_id";
-							break;
-						case 3:
-							a = data.regions[region_id].maps[map_id].tasks;
-							n = "task_id";
-							break;
-					}
-
-					// workaround to get the given poi_id
-					// life could be so easy with data.regions[region_id].maps[map_id].points_of_interest[poi_id];
-					$.each(a, function(){
-						if(this[n] == poi_id){
-							leaf.panTo(leaf.unproject(this.coord, mz)).setZoom(mz);
-						}
-					});
-				}
-			}
-			// else use the texture_dims as bounds
 			else{
-				bounds = new L.LatLngBounds(leaf.unproject([0, data.texture_dims[1]], mz), leaf.unproject([data.texture_dims[0], 0], mz));
-				leaf.setMaxBounds(bounds).setView(bounds.getCenter(), 0);
-			}
-
-			// ok, we want to display a single map
-			if(region_id && map_id){
-				parse_map(data.regions[region_id].maps[map_id]);
-			}
-			// else render anything we get
-			else{
-				$.each(data.regions, function(){
-					$.each(this.maps, function(){
-						parse_map(this);
-					});
-				});
+				leaf.removeLayer(sectors);
 			}
 		});
+/*
+		// you may specify more mapevent handlers over here - for example a click handler to annoy people ;)
+		leaf.on("click", function(e) {
+			L.popup().setLatLng(e.latlng).setContent(leaf.project(e.latlng, max_zoom).toString()).openOn(leaf);
+		});
+*/
+		// get the JSON and start the action
+		$.getJSON("https://api.guildwars2.com/v1/map_floor.json?continent_id="+continent_id+"&floor="+floor_id+"&lang="+i18n.lang, parse_response);
 	});
 }
 
@@ -243,7 +345,7 @@ function intval(mixed_var, base){
 	// +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 	// +   input by: Matteo
 	// +   bugfixed by: Brett Zamir (http://brett-zamir.me)
-	// +   bugfixed by: Rafał Kukawski (http://kukawski.pl)
+	// +   bugfixed by: Rafa? Kukawski (http://kukawski.pl)
 	// *     example 1: intval('Kevin van Zonneveld');
 	// *     returns 1: 0
 	// *     example 2: intval(4.2);
