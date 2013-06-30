@@ -11,25 +11,24 @@
 	<!-- single floor outside the worldmap -->
 	<div class="gw2map" data-floor_id="-2" data-region_id="2" data-map_id="33"></div>
 	<!-- map within the worldmap -->
-	<div class="gw2map" data-language="4" data-region_id="1" data-map_id="26" data-width="800" data-height="450"></div>
+	<div class="gw2map" data-language="1" data-region_id="4" data-map_id="15" data-height="800" data-width="100" data-w_percent="1" data-linkbox="400" data-poi_id="225" data-poi_type="3" data-polyline="12418,12867 12410,12900 12410,12934 12374,12939 12344,12957 12301,12991 12272,13026 12258,13101 12250,13142 12258,13187 12293,13215 12331,13238 12375,13258 12412,13288 12460,13332 12517,13367 12538,13412 12531,13474 12519,13528 12498,13592 12469,13617 12445,13641 12435,13659 12431,13680 12414,13698 12390,13706 12361,13717 12334,13738 12298,13759 12265,13796 12230,13849 12204,13901 12206,13959 12216,13998 "></div>
 	<!-- specific floor within a region -->
 	<div class="gw2map" data-language="3" data-continent_id="2" data-floor_id="3" data-width="100" data-w_percent="1"></div>
 	<!-- full world map -->
 	<div class="gw2map" data-width="100" data-w_percent="1" data-height="600" data-linkbox="400" data-language="1"></div>
 
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 	<script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
-	<script src="http://gw2.chillerlan.net/js/gw2maps-jquery.js"></script>
+	<!-- <script src="http://cdn.leafletjs.com/leaflet-0.6.2/leaflet.js"></script> -->
+	<script src="../js/gw2maps-jquery.js"></script>
 	<script>
 		jQuery(document).ready(function(){
-			var styles = [
-				"http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.css",
+			$.each([
+				"http://cdn.leafletjs.com/leaflet-0.6.2/leaflet.css",
 				"https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia.css",
 				"https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia-italic.css",
-				"http://gw2.chillerlan.net/css/gw2maps.css"
-			];
-
-			$.each(styles, function(i){
+				"../css/gw2maps.css"
+			], function(i){// used in the wiki map widget since we cannot access the header there
 				var ref = document.createElement("link");
 				ref.setAttribute("rel", "stylesheet");
 				ref.setAttribute("type", "text/css");
