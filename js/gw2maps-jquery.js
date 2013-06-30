@@ -40,12 +40,16 @@
  */
 function gw2maps(container_class, i18n){
 	$(container_class).each(function(i,c){
-		// make sure that any dataset values are number - for wiki security reasons (using filter type integer in the widget extension)
+		// make sure that any dataset values are number - for wiki security reasons
+		// (using filter type integer in the widget extension)
+		// exception: the polyline will be a string of comma and space seperated number pairs
+		// like: 16661,16788 17514,15935...
+		// using preg_replace("#[^,\-\d\s]#", "", $str), so we need to check for valid pairs
 		// i don't bother reading the elements dataset for compatibility reasons
 		var options = {};
 		$.each(c.attributes, function(j,e){
 			if(e.name.match(/^data-/)){
-				options[e.name.substr(5)] = intval(e.value);
+				options[e.name.substr(5)] = (e.name === "data-polyline") ? e.value : intval(e.value);
 			}
 		});
 
@@ -64,6 +68,7 @@ function gw2maps(container_class, i18n){
 				icon_waypoint:{link:"http://wiki-de.guildwars2.com/images/d/df/Wegmarke_Icon.png", size:[24,24]},
 				errortile:"http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
 				poi:"Sehenswürdigkeiten",
+				polyline:"Polylinien",
 				sector:"Zonen",
 				skill:"Fertigkeitspunkte",
 				task:"Aufgaben",
@@ -81,6 +86,7 @@ function gw2maps(container_class, i18n){
 				icon_waypoint:{link:"http://wiki.guildwars2.com/images/d/d2/Waypoint_(map_icon).png", size:[20,20]},
 				errortile:"http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
 				poi:"Points of Interest",
+				polyline:"Polylines",
 				sector:"Sector Names",
 				skill:"Skill Challenges",
 				task:"Tasks",
@@ -98,6 +104,7 @@ function gw2maps(container_class, i18n){
 				icon_waypoint:{link:"", size:[20,20]},
 				errortile:"http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
 				poi:"poi-es",
+				polyline:"polyline-es",
 				sector:"sector-es",
 				skill:"skill-es",
 				task:"task-es",
@@ -115,6 +122,7 @@ function gw2maps(container_class, i18n){
 				icon_waypoint:{link:"http://wiki-fr.guildwars2.com/images/5/56/Progression_passage.png", size:[20,20]},
 				errortile:"http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
 				poi:"Sites remarquables",
+				polyline:"polyline-fr",
 				sector:"Secteurs",
 				skill:"Défis de compétences",
 				task:"Cœurs",
@@ -158,6 +166,7 @@ function gw2maps(container_class, i18n){
 			skills = L.layerGroup(),
 			waypoints = L.layerGroup(),
 			sectors = L.layerGroup(),
+			polys =  L.layerGroup(),
 			// a container for some links
 			linkbox = $('<div class="linkbox" style="width: '+list+'; height: '+height+';" />'),
 			up = function(coords){
@@ -190,7 +199,7 @@ function gw2maps(container_class, i18n){
 				linkbox.append('<div class="header sub">'+i18n.task+'</div>');
 				$.each(map.tasks, function(){
 					popup_text = '<a href="'+i18n.wiki+encodeURIComponent(this.objective.replace(/\.$/, ""))+'" target="_blank">'+this.objective+"</a> ("+this.level+")<br />id:"+this.task_id;
-					parse_point({layer:pois, coords:this.coord, title:this.objective, icon:i18n.icon_task, text:this.objective, popup:popup_text});
+					parse_point({layer:pois, coords:this.coord, title:this.objective, icon:i18n.icon_task, text:"("+this.level+") "+this.objective, popup:popup_text});
 					if(poi_id && poi_type && this.task_id === poi_id){
 						pan({data:{coords:this.coord, text:popup_text}});
 					}
@@ -290,6 +299,19 @@ function gw2maps(container_class, i18n){
 			attribution:i18n.attribution+': <a href="https://forum-en.guildwars2.com/forum/community/api/API-Documentation" target="_blank">GW2 Maps API</a>, &copy;<a href="http://www.arena.net/" target="_blank">ArenaNet</a>'
 		}).addTo(leaf);
 
+		// we have a polyline to display?
+		if(options.polyline && options.polyline.length > 7){
+			var coords = options.polyline.split(" "),
+				line = [];
+			$.each(coords, function(i,c){
+				if(c.match(/\d{1,5},\d{1,5}/)){
+					var point = c.split(",");
+					line.push(up(point));
+				}
+			});
+			polys.addLayer(L.polyline(line, {color: "#ffe500"}));
+		}
+
 		// add layers and a Layer control
 		layers[i18n.poi] = pois;
 		layers[i18n.sector] = sectors;
@@ -297,12 +319,14 @@ function gw2maps(container_class, i18n){
 		layers[i18n.task] = tasks;
 		layers[i18n.vista] = vistas;
 		layers[i18n.waypoint] = waypoints;
+		layers[i18n.polyline] = polys;
 		if(map_controls){
 			L.control.layers(null, layers).addTo(leaf);
 		}
 
 		// show stuff on the map
 		pois.addTo(leaf);
+		polys.addTo(leaf);
 		skills.addTo(leaf);
 		tasks.addTo(leaf);
 		vistas.addTo(leaf);
@@ -345,7 +369,7 @@ function intval(mixed_var, base){
 	// +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 	// +   input by: Matteo
 	// +   bugfixed by: Brett Zamir (http://brett-zamir.me)
-	// +   bugfixed by: Rafa? Kukawski (http://kukawski.pl)
+	// +   bugfixed by: Rafał Kukawski (http://kukawski.pl)
 	// *     example 1: intval('Kevin van Zonneveld');
 	// *     returns 1: 0
 	// *     example 2: intval(4.2);
