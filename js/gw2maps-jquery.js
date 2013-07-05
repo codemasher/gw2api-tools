@@ -13,7 +13,7 @@
  * requires:
  *
  * - array_multisort and intval from phpjs (included)
- * - Leaflet polyline decorator (not included, https://github.com/bbecquet/Leaflet.PolylineDecorator)
+ * - Leaflet polyline decorator (included)
  *
  *
  * TODO
@@ -37,7 +37,7 @@ var GW2Maps = {
 					maxZoom: options.max_zoom,
 					crs: L.CRS.Simple,
 					zoomControl: options.map_controls,
-					attributionControl: options.map_controls
+					attributionControl: false
 				}),
 				layers: {},
 				linkbox: $('<div class="linkbox" style="width: '+options.linkbox+'; height: '+options.height+';" />')
@@ -70,6 +70,8 @@ var GW2Maps = {
 		}).addTo(mapobject.map);
 
 		// add layergroups and show them on the map
+		mapobject.layers[options.i18n.event] = L.layerGroup();
+		mapobject.layers[options.i18n.event].addTo(mapobject.map);
 		mapobject.layers[options.i18n.landmark] = L.layerGroup();
 		mapobject.layers[options.i18n.landmark].addTo(mapobject.map);
 		mapobject.layers[options.i18n.polyline] = L.layerGroup();
@@ -85,7 +87,7 @@ var GW2Maps = {
 		mapobject.layers[options.i18n.sector] = L.layerGroup();
 		// showing the sector names on the initial map would be confusing in most cases,
 		// so we'll show them automatically only on higher zoom levels - they're in the layer menu anyway
-		if(options.region_id && options.map_id || mapobject.map.getZoom() > 4){
+		if(options.region_id && options.map_id || mapobject.map.getZoom() > 5){
 			mapobject.layers[options.i18n.sector].addTo(mapobject.map);
 		}
 
@@ -100,8 +102,9 @@ var GW2Maps = {
 		}
 
 		// magically display/remove sector names
+		// the checkbox in the layer menu will not update - bug?
 		mapobject.map.on("zoomend", function(){
-			if(mapobject.map.getZoom() > 4){
+			if(mapobject.map.getZoom() > 5){
 				mapobject.layers[options.i18n.sector].addTo(mapobject.map);
 			}
 			else{
@@ -114,52 +117,65 @@ var GW2Maps = {
 			L.popup().setLatLng(event.latlng).setContent(mapobject.map.project(event.latlng, options.max_zoom).toString()).openOn(mapobject.map);
 		});
 
-		// get the JSON and start the action
-		$.getJSON("https://api.guildwars2.com/v1/map_floor.json?continent_id="+options.continent_id+"&floor="+options.floor_id+"&lang="+options.i18n.lang, function(response){
-			GW2Maps.parse_response(mapobject, options, response, {region_id: options.region_id, map_id: options.map_id, poi_id: options.poi_id, poi_type: options.poi_type});
-		});
-//		console.log(mapobject);
+		// get the JSON and start the action ($.getJSON turned out to be pretty unstable...)
+		$.ajax({url: "https://api.guildwars2.com/v1/map_floor.json?continent_id="+options.continent_id+"&floor="+options.floor_id+"&lang="+options.i18n.lang, dataType: "json", success: function(floordata){
+			$.ajax({url: "https://api.guildwars2.com/v1/event_details.json?lang="+options.i18n.lang, dataType: "json", success: function(event_response){//async: false,
+				// get that event_details.json sorted by map
+				var eventdata = {};
+				$.each(event_response.events, function(i,e){
+					if(typeof eventdata[e.map_id] === "undefined"){
+						eventdata[e.map_id] = {};
+					}
+					eventdata[e.map_id][i] = e;
+				});
+				GW2Maps.parse_response(mapobject, options, floordata, eventdata, {region_id: options.region_id, map_id: options.map_id, poi_id: options.poi_id, poi_type: options.poi_type});
+			}});
+		}});
+
+		// return the mapobject for later use
 		return mapobject;
 	},
 
 	/**
 	 * @param mapobject
 	 * @param options
-	 * @param data
+	 * @param floordata
+	 * @param eventdata
 	 * @param locations
 	 */
-	parse_response: function(mapobject, options, data, locations){
-		var bounds,
-			clamp,
+	parse_response: function(mapobject, options, floordata, eventdata, locations){
+		var bounds,	clamp, ev,
 			p2ll = function(coords){
 				return mapobject.map.unproject(coords, options.max_zoom);
 			};
 		// the map has a clamped view? ok, we use this as bound
-		if(data.clamped_view){
-			clamp = data.clamped_view;
-			bounds = new L.LatLngBounds(p2ll([clamp[0][0], clamp[1][1]]), p2ll([clamp[1][0], clamp[0][1]]));
+		if(floordata.clamped_view){
+			clamp = floordata.clamped_view;
+			bounds = new L.LatLngBounds(p2ll([clamp[0][0], clamp[1][1]]), p2ll([clamp[1][0], clamp[0][1]])).pad(0.2);
 		}
 		// we display a specific map? so lets use the maps bounds
 		else if(locations.region_id && locations.map_id){
-			clamp = data.regions[locations.region_id].maps[locations.map_id].continent_rect;
+			clamp = floordata.regions[locations.region_id].maps[locations.map_id].continent_rect;
 			bounds = new L.LatLngBounds(p2ll([clamp[0][0], clamp[1][1]]), p2ll([clamp[1][0], clamp[0][1]])).pad(0.4);
 		}
 		// else use the texture_dims as bounds
 		else{
 //			bounds = new L.LatLngBounds(p2ll([0, (1 << options.max_zoom)*256]), p2ll([(1 << options.max_zoom)*256, 0]));
-			bounds = new L.LatLngBounds(p2ll([0, data.texture_dims[1]]), p2ll([data.texture_dims[0], 0]));
+			bounds = new L.LatLngBounds(p2ll([0, floordata.texture_dims[1]]), p2ll([floordata.texture_dims[0], 0])).pad(0.1);
 		}
 		mapobject.map.setMaxBounds(bounds).fitBounds(bounds);
 
 		// ok, we want to display a single map
 		if(locations.region_id && locations.map_id){
-			GW2Maps.parse_map(mapobject, options, data.regions[locations.region_id].maps[locations.map_id], locations);
+			ev = typeof eventdata[locations.map_id] !== "undefined" ? eventdata[locations.map_id] : false;
+			GW2Maps.parse_map(mapobject, options, floordata.regions[locations.region_id].maps[locations.map_id], ev, locations);
 		}
 		// else render anything we get
 		else{
-			$.each(data.regions, function(){
-				$.each(this.maps, function(){
-					GW2Maps.parse_map(mapobject, options, this, locations);
+			$.each(floordata.regions, function(){
+				$.each(this.maps, function(i){ // the first time where index as first param makes sense - thanks jquery... not.
+					ev = typeof eventdata[i] !== "undefined" ? eventdata[i] : false;
+					GW2Maps.parse_map(mapobject, options, this, ev, locations);
 				});
 			});
 		}
@@ -171,23 +187,12 @@ var GW2Maps = {
 	 * @param mapobject
 	 * @param options
 	 * @param map
+	 * @param events
 	 * @param locations
 	 */
-	parse_map: function(mapobject, options, map, locations){
-		var pois = {task: [], landmark: [], skill: [], vista: [], waypoint: [], sector: []},
-			sort = {task: [], landmark: [], skill: [], vista: [], waypoint: [], sector: []};
-		// tasks (hearts)
-		$.each(map.tasks, function(){
-			sort.task.push(this.level);
-			pois.task.push({
-				id: this.task_id,
-				type: "task",
-				coords: this.coord,
-				title: this.objective,
-				text: "("+this.level+") "+this.objective,
-				popup: '<a href="'+options.i18n.wiki+encodeURIComponent(this.objective.replace(/\.$/, ""))+'" target="_blank">'+this.objective+"</a> ("+this.level+")<br />id:"+this.task_id
-			});
-		});
+	parse_map: function(mapobject, options, map, events, locations){
+		var pois = {task: [], event: [], landmark: [], skill: [], vista: [], waypoint: [], sector: []},
+			sort = {task: [], event: [], landmark: [], skill: [], vista: [], waypoint: [], sector: []};
 		// pois
 		$.each(map.points_of_interest, function(){
 			if(this.type == "waypoint"){
@@ -223,6 +228,18 @@ var GW2Maps = {
 				});
 			}
 		});
+		// tasks (hearts)
+		$.each(map.tasks, function(){
+			sort.task.push(this.level);
+			pois.task.push({
+				id: this.task_id,
+				type: "task",
+				coords: this.coord,
+				title: this.objective+" ("+this.level+")",
+				text: "("+this.level+") "+this.objective,
+				popup: '<a href="'+options.i18n.wiki+encodeURIComponent(this.objective.replace(/\.$/, ""))+'" target="_blank">'+this.objective+"</a> ("+this.level+")<br />id:"+this.task_id
+			});
+		});
 		// skill challenges
 		$.each(map.skill_challenges, function(){
 			sort.skill.push(this.coord.toString());
@@ -249,6 +266,22 @@ var GW2Maps = {
 				popup: false
 			});
 		});
+		// events
+		if(events){
+			$.each(events, function(i){
+				sort.event.push(this.level);
+				pois.event.push({
+					id:i,
+					type: "event",
+					// don't look at it. really! it will melt your brain and make your eyes bleed!
+					coords: [(map.continent_rect[0][0]+(map.continent_rect[1][0]-map.continent_rect[0][0])*(this.location.center[0]-map.map_rect[0][0])/(map.map_rect[1][0]-map.map_rect[0][0])),(map.continent_rect[0][1]+(map.continent_rect[1][1]-map.continent_rect[0][1])*(1-(this.location.center [1]-map.map_rect [0][1])/(map.map_rect[1][1]-map.map_rect[0][1])))],
+					title: this.name+" ("+this.level+")",
+					text: "("+this.level+") "+this.name,
+					popup: '<a href="'+options.i18n.wiki+encodeURIComponent(this.name.replace(/\.$/, ""))+'" target="_blank">'+this.name+"</a> ("+this.level+")<br />id:"+i
+				});
+			});
+
+		}
 
 		// loop out the map points
 		mapobject.linkbox.append('<div class="header">'+map.name+'</div>');
@@ -279,12 +312,21 @@ var GW2Maps = {
 				}
 			},
 			icon = options.i18n["icon_"+point.type],
-			marker = L.marker(mapobject.map.unproject(point.coords, options.max_zoom), {
-				title: point.title,
-				icon: point.icon_text && point.icon_text_class
-					? L.divIcon({className: point.icon_text_class, html: point.icon_text})
-					: L.icon({iconUrl: icon.link, iconSize: icon.size, popupAnchor:[0, -icon.size[1]/2]})
-			});
+			icn;
+
+		if(point.type === "sector"){
+			icn = L.divIcon({className: point.icon_text_class, html: point.icon_text});
+		}
+		else if(point.type === "event"){
+			//...
+			icn = L.icon({iconUrl: icon.link, iconSize: icon.size, popupAnchor:[0, -icon.size[1]/2]});
+		}
+		else{
+			icn = L.icon({iconUrl: icon.link, iconSize: icon.size, popupAnchor:[0, -icon.size[1]/2]});
+		}
+
+		var marker = L.marker(mapobject.map.unproject(point.coords, options.max_zoom), {title: point.title, icon: icn});
+
 		if(point.popup){
 			marker.bindPopup(point.popup);
 		}
@@ -303,24 +345,38 @@ var GW2Maps = {
 	 * @param options
 	 */
 	parse_polylines: function(mapobject, options){
-		// TODO add multi polyline support and polyline options
-		var coords = options.polyline.split(" "),
-			line = [], deco;
-		$.each(coords, function(i,c){
-			if(c.match(/\d{1,5},\d{1,5}/)){
-				var point = c.split(",");
-				line.push(mapobject.map.unproject(point, options.max_zoom));
+		var lines = options.polyline.split(";");
+		$.each(lines, function(){
+			var coords = this.split(" "), line = [], opts = {};
+			$.each(coords, function(i, c){
+				if(c.match(/\d{1,5},\d{1,5}/)){
+					var point = c.split(",");
+					line.push(mapobject.map.unproject(point, options.max_zoom));
+				}
+				if(c.match(/(color|width|opacity|style|type)=(([0-9a-f]{3}){1,2}|\d{1,3}|(arrow|marker|dash))/i)){
+					var opt = c.toLowerCase().split("=");
+					opts[opt[0]] = opt[1];
+				}
+			});
+			var color = typeof opts.color !== "undefined" ? "#"+opts.color : "#ffe500",
+				width = typeof opts.width !== "undefined" ? phpjs.intval(opts.width) : 3,
+				opacity = typeof opts.opacity !== "undefined" ? phpjs.intval(opts.opacity)/100 : 0.8,
+				dash = opts.style === "dash"  ? "30,15,10,15" : "";
+
+			line = L.polyline(line, {color: color, weight: width, opacity: opacity, dashArray: dash});
+			mapobject.layers[options.i18n.polyline].addLayer(line);
+
+			if(typeof opts.type !== "undefined"){
+				var patterns = [];
+				if(opts.type === "arrow"){
+					patterns.push({offset: 50, repeat: "150px", symbol: new L.Symbol.ArrowHead({pixelSize: 15, polygon: false, pathOptions: {stroke: true, color: color, weight: width, opacity: opacity}})});
+				}
+				if(opts.type === "marker"){
+					patterns.push({offset: 0, repeat: "100%", symbol: new L.Symbol.Marker()});
+				}
+				mapobject.layers[options.i18n.polyline].addLayer(L.polylineDecorator(line, {patterns: patterns}));
 			}
 		});
-		line = L.polyline(line, {color: "#ffe500", weight: 4, opacity: 0.6});
-		mapobject.layers[options.i18n.polyline].addLayer(line);
-
-		deco = L.polylineDecorator(line, {
-			patterns: [
-				{offset: 20, repeat: "100px", symbol: new L.Symbol.ArrowHead({pixelSize: 15, polygon: false, pathOptions: {stroke: true, color: "#ffe500", weight: 4, opacity: 0.6}})}
-			]
-		});
-		mapobject.layers[options.i18n.polyline].addLayer(deco);
 	},
 
 	/**
@@ -349,12 +405,12 @@ var GW2Maps = {
 		// (using filter type integer in the widget extension)
 		// exception: the polyline will be a string of comma and space seperated number pairs
 		// like: 16661,16788 17514,15935...
-		// using preg_replace("#[^,\-\d\s]#", "", $str), so we need to check for valid pairs
+		// using preg_replace("#[^,;=\-\d\s\w]#", "", $str), so we need to check for valid pairs
 		// i don't bother reading the elements dataset for compatibility reasons
 		var dataset = {};
-		$.each(container.attributes, function(i,attribute){
-			if(attribute.name.match(/^data-/)){
-				dataset[attribute.name.substr(5)] = (attribute.name === "data-polyline") ? attribute.value : phpjs.intval(attribute.value);
+		$.each(container.attributes, function(){
+			if(this.name.match(/^data-/)){
+				dataset[this.name.substr(5)] = (this.name === "data-polyline") ? this.value : phpjs.intval(this.value);
 			}
 		});
 
@@ -387,12 +443,14 @@ var GW2Maps = {
 		de: {
 			lang: "de",
 			wiki: "http://wiki-de.guildwars2.com/wiki/",
+			icon_event: {link: "http://wiki-de.guildwars2.com/images/7/7a/Event_Angriff_Icon.png", size: [24,24]},
 			icon_landmark: {link: "http://wiki-de.guildwars2.com/images/0/0f/Sehenswürdigkeit_Icon.png", size: [16,16]},
 			icon_skill: {link: "http://wiki-de.guildwars2.com/images/c/c3/Fertigkeitspunkt_Icon.png", size: [20,20]},
 			icon_task: {link: "http://wiki-de.guildwars2.com/images/b/b7/Aufgabe_Icon.png", size: [20,20]},
 			icon_vista: {link: "http://wiki-de.guildwars2.com/images/9/9f/Aussichtspunkt_Icon.png", size: [20,20]},
 			icon_waypoint: {link: "http://wiki-de.guildwars2.com/images/d/df/Wegmarke_Icon.png", size: [24,24]},
 			errortile: "http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+			event: "Events",
 			landmark: "Sehenswürdigkeiten",
 			polyline: "Polylinien",
 			sector: "Zonen",
@@ -405,12 +463,14 @@ var GW2Maps = {
 		en: {
 			lang: "en",
 			wiki: "http://wiki.guildwars2.com/wiki/",
+			icon_event: {link: "http://wiki-de.guildwars2.com/images/7/7a/Event_Angriff_Icon.png", size: [24,24]},
 			icon_landmark: {link: "http://wiki.guildwars2.com/images/f/fb/Point_of_interest.png", size: [20,20]},
 			icon_skill: {link: "http://wiki.guildwars2.com/images/8/84/Skill_point.png", size: [20,20]},
 			icon_task: {link: "http://wiki.guildwars2.com/images/f/f8/Complete_heart_(map_icon).png", size: [20,20]},
 			icon_vista: {link: "http://wiki.guildwars2.com/images/d/d9/Vista.png", size: [20,20]},
 			icon_waypoint: {link: "http://wiki.guildwars2.com/images/d/d2/Waypoint_(map_icon).png", size: [20,20]},
 			errortile: "http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+			event: "Events",
 			landmark: "Points of Interest",
 			polyline: "Polylines",
 			sector: "Sector Names",
@@ -424,12 +484,14 @@ var GW2Maps = {
 		es: {
 			lang:"es",
 			wiki: "http://wiki-es.guildwars2.com/wiki/",
+			icon_event: {link: "http://wiki-de.guildwars2.com/images/7/7a/Event_Angriff_Icon.png", size: [24,24]},
 			icon_landmark: {link: "http://wiki.guildwars2.com/images/f/fb/Point_of_interest.png", size: [20,20]},
 			icon_skill: {link: "http://wiki.guildwars2.com/images/8/84/Skill_point.png", size: [20,20]},
 			icon_task: {link: "http://wiki.guildwars2.com/images/f/f8/Complete_heart_(map_icon).png", size: [20,20]},
 			icon_vista: {link: "http://wiki.guildwars2.com/images/d/d9/Vista.png", size: [20,20]},
 			icon_waypoint: {link: "http://wiki.guildwars2.com/images/d/d2/Waypoint_(map_icon).png", size: [20,20]},
 			errortile: "http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+			event: "event-es",
 			landmark: "poi-es",
 			polyline: "polyline-es",
 			sector: "sector-es",
@@ -442,12 +504,14 @@ var GW2Maps = {
 		fr: {
 			lang: "fr",
 			wiki: "http://wiki-fr.guildwars2.com/wiki/",
+			icon_event: {link: "http://wiki-de.guildwars2.com/images/7/7a/Event_Angriff_Icon.png", size: [24,24]},
 			icon_landmark: {link: "http://wiki-fr.guildwars2.com/images/d/d2/Icône_site_remarquable_découvert.png", size: [20,20]},
 			icon_skill: {link: "http://wiki-fr.guildwars2.com/images/5/5c/Progression_défi.png", size: [20,20]},
 			icon_task: {link: "http://wiki-fr.guildwars2.com/images/a/af/Icône_coeur_plein.png", size: [20,20]},
 			icon_vista: {link: "http://wiki-fr.guildwars2.com/images/8/82/Icône_panorama.png", size: [20,20]},
 			icon_waypoint: {link: "http://wiki-fr.guildwars2.com/images/5/56/Progression_passage.png", size: [20,20]},
 			errortile: "http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+			event: "event-fr",
 			landmark: "Sites remarquables",
 			polyline: "polyline-fr",
 			sector: "Secteurs",
@@ -462,7 +526,7 @@ var GW2Maps = {
 
 
 /**
- *  excerpts from phpJS
+ *  (minified) excerpts from phpJS
  *  @link http://phpjs.org
  */
 var phpjs = {
@@ -484,39 +548,34 @@ var phpjs = {
 			return 0;
 		}
 	},
-
-	array_multisort: function (arr) {
-		var argl = arguments.length,
-			sal = 0,
-			flags = {
+	array_multisort: function(arr){
+		var flags = {
 				'SORT_REGULAR': 16,
 				'SORT_NUMERIC': 17,
 				'SORT_STRING': 18,
 				'SORT_ASC': 32,
 				'SORT_DESC': 40
 			},
-			sortArrs = [
-				[]
-			],
+			//argl = arguments.length,
+			//args = arguments,
+			sortArrsLength = 0,
+			sortArrs = [[]],
+			sortKeys = [[]],
 			sortFlag = [0],
-			sortKeys = [
-				[]
-			],
 			g = 0,
 			i = 0,
-			j = 0,
+			j,// = 0
 			k = '',
 			l = 0,
 			thingsToSort = [],
 			vkey = 0,
 			zlast = null,
-			args = arguments,
 			nLastSort = [],
 			lastSort = [],
 			lastSorts = [],
 			tmpArray = [],
 			elIndex = 0,
-			sortDuplicator = function(a, b){
+			sortDuplicator = function(){//a, b
 				return nLastSort.shift();
 			},
 			sortFunctions = [
@@ -569,7 +628,7 @@ var phpjs = {
 
 		var arrMainLength = sortArrs[0].length, sortComponents = [0, arrMainLength];
 
-		for(j = 1; j < argl; j++){
+		for(j = 1; j < arguments.length; j++){
 			if(Object.prototype.toString.call(arguments[j]) === '[object Array]'){
 				sortArrs[j] = arguments[j];
 				sortFlag[j] = 0;
@@ -593,7 +652,7 @@ var phpjs = {
 			}
 			else if(typeof arguments[j] === 'string'){
 				var lFlag = sortFlag.pop();
-				if(typeof flags[arguments[j]] === 'undefined' || ((((flags[arguments[j]]) >>> 4)&(lFlag >>> 4)) > 0)){ // Keep extra parentheses around latter flags check to avoid minimization leading to CDATA closer
+				if(typeof flags[arguments[j]] === 'undefined' || ((((flags[arguments[j]]) >>> 4)&(lFlag >>> 4)) > 0)){
 					return false;
 				}
 				sortFlag.push(lFlag+flags[arguments[j]]);
@@ -617,7 +676,7 @@ var phpjs = {
 
 				if(sortComponents.length === 0){
 					if(Object.prototype.toString.call(arguments[i]) === '[object Array]'){
-						args[i] = sortArrs[i];
+						arguments[i] = sortArrs[i]; // args -> arguments
 					}
 					else{
 						for(k in arguments[i]){
@@ -625,10 +684,10 @@ var phpjs = {
 								delete arguments[i][k];
 							}
 						}
-						sal = sortArrs[i].length;
-						for(j = 0, vkey = 0; j < sal; j++){
+						sortArrsLength = sortArrs[i].length;
+						for(j = 0, vkey = 0; j < sortArrsLength; j++){
 							vkey = sortKeys[i][j];
-							args[i][vkey] = sortArrs[i][j];
+							arguments[i][vkey] = sortArrs[i][j]; // args -> arguments
 						}
 					}
 					delete sortArrs[i];
@@ -724,7 +783,7 @@ var phpjs = {
 					sortComponents.push(j);
 				}
 				if(Object.prototype.toString.call(arguments[i]) === '[object Array]'){
-					args[i] = sortArrs[i];
+					arguments[i] = sortArrs[i]; // args -> arguments
 				}
 				else{
 					for(j in arguments[i]){
@@ -733,10 +792,10 @@ var phpjs = {
 						}
 					}
 
-					sal = sortArrs[i].length;
-					for(j = 0, vkey = 0; j < sal; j++){
+					sortArrsLength = sortArrs[i].length;
+					for(j = 0, vkey = 0; j < sortArrsLength; j++){
 						vkey = sortKeys[i][j];
-						args[i][vkey] = sortArrs[i][j];
+						arguments[i][vkey] = sortArrs[i][j]; // args -> arguments
 					}
 
 				}
