@@ -1,31 +1,17 @@
 <?php
 /**
- * gw2location.php
+ * gw2location-receiver.php
  * created: 06.07.13
  *
  * GW2 location provider backend
  *
  * Location sender by Heimdall:
  * @link https://gw2apicpp.codeplex.com/ (source)
+ * @link http://gw2.chillerlan.net/files/gw2location.zip (binaries)
  *
  */
 
-// mysql connection data
-
-$mysql = [
-	'server'   => 'localhost',
-	'user'     => 'user',
-	'password' => 'password',
-	'dbname'   => 'dbname'
-];
-
-// connect to the db
-$db = mysqli_init();
-
-if(!mysqli_real_connect($db, $mysql['server'], $mysql['user'], $mysql['password'], $mysql['dbname'])){
-	// note: you sould not expose sql errors to the public on a production system. never. ever.
-	exit('Could not connect to the database: '.mysqli_connect_errno().' - '.mysqli_connect_error());
-}
+require_once '../inc/mysqli.inc.php';
 
 // receive data from the location-sender
 if(isset($_POST['data']) && !empty($_POST['data'])){
