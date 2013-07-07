@@ -2,6 +2,14 @@
 /**
  * gw2location-ajax.php
  * created: 07.07.13
+ * by Smiley
+ *
+ * GW2 location provider backend: AJAX Response
+ *
+ * Location sender by Heimdall:
+ * @link https://gw2apicpp.codeplex.com/ (source)
+ * @link http://gw2.chillerlan.net/files/gw2location.zip (binaries)
+ *
  */
 
 /*

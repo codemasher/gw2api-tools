@@ -2,8 +2,9 @@
 /**
  * gw2location-receiver.php
  * created: 06.07.13
+ * by Smiley
  *
- * GW2 location provider backend
+ * GW2 location provider backend: Location receiver
  *
  * Location sender by Heimdall:
  * @link https://gw2apicpp.codeplex.com/ (source)
