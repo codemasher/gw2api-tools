@@ -13,7 +13,7 @@
  * requires:
  *
  * - array_multisort and intval from phpjs (included)
- * - Leaflet polyline decorator (included)
+ * - Leaflet polyline decorator (not included, https://github.com/bbecquet/Leaflet.PolylineDecorator)
  *
  *
  * TODO
@@ -128,9 +128,17 @@ var GW2Maps = {
 					}
 					eventdata[e.map_id][i] = e;
 				});
-				GW2Maps.parse_response(mapobject, options, floordata, eventdata, {region_id: options.region_id, map_id: options.map_id, poi_id: options.poi_id, poi_type: options.poi_type});
-			}});
-		}});
+				GW2Maps.parse_response(mapobject, options, floordata, eventdata);
+			}}).fail(function(){console.log(this)});
+		}}).fail(function(a,b,c){
+			// if we don't get any floordata, we try at least to render the map
+			options.region_id = false;
+			GW2Maps.parse_response(mapobject, options, {texture_dims: options.continent_id === 1 ? [32768,32768] : [16384,16384], regions:[]}, {});
+				console.log(a);
+				console.log(b);
+				console.log(c);
+			mapobject.linkbox.append(this.toString());
+		});
 
 		// return the mapobject for later use
 		return mapobject;
@@ -141,10 +149,9 @@ var GW2Maps = {
 	 * @param options
 	 * @param floordata
 	 * @param eventdata
-	 * @param locations
 	 */
-	parse_response: function(mapobject, options, floordata, eventdata, locations){
-		var bounds,	clamp, ev,
+	parse_response: function(mapobject, options, floordata, eventdata){
+		var bounds, clamp, ev,
 			p2ll = function(coords){
 				return mapobject.map.unproject(coords, options.max_zoom);
 			};
@@ -154,8 +161,8 @@ var GW2Maps = {
 			bounds = new L.LatLngBounds(p2ll([clamp[0][0], clamp[1][1]]), p2ll([clamp[1][0], clamp[0][1]])).pad(0.2);
 		}
 		// we display a specific map? so lets use the maps bounds
-		else if(locations.region_id && locations.map_id){
-			clamp = floordata.regions[locations.region_id].maps[locations.map_id].continent_rect;
+		else if(options.region_id && options.map_id){
+			clamp = floordata.regions[options.region_id].maps[options.map_id].continent_rect;
 			bounds = new L.LatLngBounds(p2ll([clamp[0][0], clamp[1][1]]), p2ll([clamp[1][0], clamp[0][1]])).pad(0.4);
 		}
 		// else use the texture_dims as bounds
@@ -166,16 +173,16 @@ var GW2Maps = {
 		mapobject.map.setMaxBounds(bounds).fitBounds(bounds);
 
 		// ok, we want to display a single map
-		if(locations.region_id && locations.map_id){
-			ev = typeof eventdata[locations.map_id] !== "undefined" ? eventdata[locations.map_id] : false;
-			GW2Maps.parse_map(mapobject, options, floordata.regions[locations.region_id].maps[locations.map_id], ev, locations);
+		if(options.region_id && options.map_id){
+			ev = typeof eventdata[options.map_id] !== "undefined" ? eventdata[options.map_id] : false;
+			GW2Maps.parse_map(mapobject, options, floordata.regions[options.region_id].maps[options.map_id], ev);
 		}
 		// else render anything we get
 		else{
 			$.each(floordata.regions, function(){
 				$.each(this.maps, function(i){ // the first time where index as first param makes sense - thanks jquery... not.
 					ev = typeof eventdata[i] !== "undefined" ? eventdata[i] : false;
-					GW2Maps.parse_map(mapobject, options, this, ev, locations);
+					GW2Maps.parse_map(mapobject, options, this, ev);
 				});
 			});
 		}
@@ -188,11 +195,14 @@ var GW2Maps = {
 	 * @param options
 	 * @param map
 	 * @param events
-	 * @param locations
 	 */
-	parse_map: function(mapobject, options, map, events, locations){
+	parse_map: function(mapobject, options, map, events){
 		var pois = {task: [], event: [], landmark: [], skill: [], vista: [], waypoint: [], sector: []},
-			sort = {task: [], event: [], landmark: [], skill: [], vista: [], waypoint: [], sector: []};
+			sort = {task: [], event: [], landmark: [], skill: [], vista: [], waypoint: [], sector: []},
+			recalc_event_coords = function(cr, mr, p){
+				// don't look at it. really! it will melt your brain and make your eyes bleed!
+				return [(cr[0][0]+(cr[1][0]-cr[0][0])*(p[0]-mr[0][0])/(mr[1][0]-mr[0][0])),(cr[0][1]+(cr[1][1]-cr[0][1])*(1-(p[1]-mr [0][1])/(mr[1][1]-mr[0][1])))]
+			};
 		// pois
 		$.each(map.points_of_interest, function(){
 			if(this.type == "waypoint"){
@@ -273,8 +283,7 @@ var GW2Maps = {
 				pois.event.push({
 					id:i,
 					type: "event",
-					// don't look at it. really! it will melt your brain and make your eyes bleed!
-					coords: [(map.continent_rect[0][0]+(map.continent_rect[1][0]-map.continent_rect[0][0])*(this.location.center[0]-map.map_rect[0][0])/(map.map_rect[1][0]-map.map_rect[0][0])),(map.continent_rect[0][1]+(map.continent_rect[1][1]-map.continent_rect[0][1])*(1-(this.location.center [1]-map.map_rect [0][1])/(map.map_rect[1][1]-map.map_rect[0][1])))],
+					coords: recalc_event_coords(map.continent_rect,map.map_rect,this.location.center),
 					title: this.name+" ("+this.level+")",
 					text: "("+this.level+") "+this.name,
 					popup: '<a href="'+options.i18n.wiki+encodeURIComponent(this.name.replace(/\.$/, ""))+'" target="_blank">'+this.name+"</a> ("+this.level+")<br />id:"+i
@@ -291,7 +300,7 @@ var GW2Maps = {
 			if(points.length > 0){
 				mapobject.linkbox.append('<div class="header sub">'+options.i18n[i]+'</div>');
 				$.each(points, function(){
-					GW2Maps.parse_point(mapobject, options, this, locations);
+					GW2Maps.parse_point(mapobject, options, this);
 				});
 			}
 		});
@@ -301,9 +310,8 @@ var GW2Maps = {
 	 * @param mapobject
 	 * @param options
 	 * @param point
-	 * @param locations
 	 */
-	parse_point: function(mapobject, options, point, locations){
+	parse_point: function(mapobject, options, point){
 		var pan = function(event){
 				var ll = mapobject.map.unproject(event.data.coords, options.max_zoom);
 				mapobject.map.panTo(ll);
@@ -334,7 +342,7 @@ var GW2Maps = {
 		mapobject.linkbox.append($('<div>'+(icon ? '<img src="'+icon.link+'" style="width:16px; height:16px" />' : '')+' '+point.text+'</div>')
 			.on("click", null, {coords: point.coords, text: point.popup}, pan));
 		// we have also a poi? lets find and display it...
-		if(locations.poi_id && point.id === locations.poi_id && locations.poi_type && point.type === locations.poi_type){
+		if(options.poi_id && point.id === options.poi_id && options.poi_type && point.type === options.poi_type){
 			pan({data: {coords: point.coords, text: point.popup}});
 			mapobject.map.setZoom(options.max_zoom);
 		}

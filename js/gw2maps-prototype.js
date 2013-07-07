@@ -2,279 +2,861 @@
  * gw2Maps.js
  * created: 21.06.13
  *
- * Awesome wiki maps by Smiley
+ * Awesome GW2 maps by Smiley
  *
  * based on Cliff's example
  * http://jsfiddle.net/cliff/CRRGC/
  *
  * and Dr. Ishmaels proof of concept
  * http://wiki.guildwars2.com/wiki/User:Dr_ishmael/leaflet
+ *
+ * requires:
+ *
+ * - array_multisort and intval from phpjs (included)
+ * - Leaflet polyline decorator (not included, https://github.com/bbecquet/Leaflet.PolylineDecorator)
+ *
+ *
+ * TODO
+ *
+ * switch floors for maps with multiple floors e.g. like Rata Sum
  */
 
 // Enable XSS... errr... CORS for Prototype: http://kourge.net/node/131
 // the console will tell you: Refused to get unsafe header "X-JSON"
 Ajax.Responders.register({
-	onCreate: function(response){
-		response.transport.setRequestHeader = Prototype.emptyFunction;
+	onCreate: function(response) {
+		var t = response.transport;
+		t.setRequestHeader = t.setRequestHeader.wrap(function(original, k, v) {
+			if (/^(accept|accept-language|content-language)$/i.test(k))
+				return original(k, v);
+			if (/^content-type$/i.test(k) &&
+				/^(application\/x-www-form-urlencoded|multipart\/form-data|text\/plain)(;.+)?$/i.test(v))
+				return original(k, v);
+			return;
+		});
 	}
 });
 
-/**
- * @param container_class
- *
- * dataset {
- *     language: int (1=de, 2=en, 3=es, 4=fr),
- *     continent_id: (1=Tyria ,2=The Mists),
- *     floor_id: int,
- *     region_id: non negative int,
- *     map_id: non negative int,
- *     poi_id: non negative int,
- *     poi_type: int (1=poi, 2=sector, 3=task),
- *     disable_controls: bool,
- *     width: non negative int,
- *     w_percent: bool,
- *     height: non negative int,
- *     h_percent: bool
- *     }
- */
-function gw2maps(container_class){
-	$$(container_class).each(function(c){
-		// make sure that any dataset values are number
-		// i don't bother reading the elements dataset for compatibility reasons
-		var options = {};
-		for(var j=0; j<c.attributes.length; j++){
-			if(c.attributes[j].name.match(/^data-/)){
-				options[c.attributes[j].name.substr(5)] = intval(c.attributes[j].value);
-			}
-		}
 
-		// first lets check the option values and fall back to defaults if needed
-		var	continent_id = (typeof options.continent_id === "number" && options.continent_id >=1 && options.continent_id >= 2) ? options.continent_id : 1,
-			floor_id = (typeof options.floor_id === "number") ? options.floor_id : 2,
-			region_id = (typeof options.region_id === "number" && options.region_id >= 0) ? options.region_id : false,
-			map_id = (typeof options.map_id === "number" && options.map_id >= 0) ? options.map_id : false,
-			poi_id = (typeof options.poi_id === "number" && options.poi_id >= 0) ? options.poi_id : false,
-			poi_type = (typeof options.poi_type === "number" && options.poi_type >= 0) ? options.poi_type : false,
-			map_controls = (options.disable_controls != true),
-			w_dimension = (options.w_percent == true) ? "%" : "px",
-			h_dimension = (options.h_percent == true) ? "%" : "px",
-			width = (typeof options.width === "number" && options.width >= 0) ? options.width+w_dimension : "800px",
-			height = (typeof options.height === "number" && options.height >= 0) ? options.height+h_dimension : "450px",
-		// determine the max zoomlevel given in continents.json - Tyria: 7, The Mists: 6
-			mz = (continent_id === 1) ? 7 : 6,
-		// the map object
-			leaf = L.map(c, {minZoom: 0, maxZoom: mz, crs: L.CRS.Simple, zoomControl: map_controls, attributionControl: map_controls}),
-		// some marker icons
-			icon_wp = L.icon({iconUrl: "http://gw2.chillerlan.net/img/waypoint.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-			icon_poi = L.icon({iconUrl: "http://gw2.chillerlan.net/img/poi.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-			icon_vista = L.icon({iconUrl: "http://gw2.chillerlan.net/img/vista.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-			icon_heart = L.icon({iconUrl: "http://gw2.chillerlan.net/img/heart.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-			icon_skill = L.icon({iconUrl: "http://gw2.chillerlan.net/img/skill_point.png", iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]}),
-		// set the layerGroups
-			vistas = L.layerGroup(),
-			pois = L.layerGroup(),
-			tasks = L.layerGroup(),
-			skills = L.layerGroup(),
-			waypoints = L.layerGroup(),
-			sectors = L.layerGroup(),
-		// prepare i18n
-			wiki, lang, text = {},
-		// the map parser
-			parse_mapdata = function(map){
-				// loop out pois
-				map.points_of_interest.each(function(p){
-					if(p.type == "waypoint"){
-						waypoints.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: p.name, icon: icon_wp}).bindPopup(p.name+"<br />id: "+p.poi_id));
-					}
-					if(p.type == "landmark"){
-						pois.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: p.name, icon: icon_poi})
-							.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(p.name)+'" target="_blank">'+p.name+"</a><br />id: "+p.poi_id));
-					}
-					if(p.type == "vista"){
-						vistas.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: "id:"+p.poi_id, icon: icon_vista}));
-					}
-				});
-				// sector names
-				map.sectors.each(function(p){
-					sectors.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: p.name+", id:"+p.sector_id, icon: L.divIcon({className: "sector_text", html: p.name})}));
-				});
-				// skill challenges
-				map.skill_challenges.each(function(p){
-					skills.addLayer(L.marker(leaf.unproject(p.coord, mz), {icon: icon_skill}));
-				});
-				// tasks (hearts)
-				map.tasks.each(function(p){
-					tasks.addLayer(L.marker(leaf.unproject(p.coord, mz), {title: p.objective, icon: icon_heart})
-						.bindPopup('<a href="http://wiki'+wiki+".guildwars2.com/wiki/"+encodeURIComponent(p.objective.replace(/\.$/, ""))+'" target="_blank">'+p.objective+"</a> ("+p.level+")<br />id: "+p.task_id));
-				});
+var GW2Maps = {
+	/**
+	 * @param container
+	 * @returns object|bool
+	 */
+	init: function(container){
+		if(typeof container !== "object"){
+			return false;
+		}
+		var options = GW2Maps.options(container),
+			mapobject = {
+				map: L.map(container, {
+					minZoom: 0,
+					maxZoom: options.max_zoom,
+					crs: L.CRS.Simple,
+					zoomControl: options.map_controls,
+					attributionControl: options.map_controls
+				}),
+				layers: {},
+				linkbox: new Element("div", {"class":"linkbox"}).setStyle({"width": options.linkbox, "height": options.height}),
+				continent: options.continent_id
 			};
 
-		// determine the language and wiki prefix - integer for wiki security reasons (using filter type integer in the widget extension)
-		switch(options.language){
-			case 1: lang = "de"; wiki = "-de"; break;
-			case 2: lang = "en"; wiki = ""; break;
-			case 3: lang = "es"; wiki = "-es"; break;
-			case 4: lang = "fr"; wiki = "-fr"; break;
-			default: lang = "en"; wiki = ""; break;
-		}
+		// resize the container to the current viewport size
+		//container.setStyle({"height":document.viewport.getHeight()+"px"});
 
-		// set the map container to the given size
-		c.setStyle({"width": width, "height": height, "background-color": "#fff"});
+		// first lets prepare our container
+		if(options.linkbox){
+			// oh, we want a list containing a list of points - no problem! we'll wrap the map container with a table like construct.
+			var map_cell = new Element("div", {"class": "table-cell"}).setStyle({"width": "100%"});
+			container.setStyle({"width": "100%", "height": options.height}).wrap(map_cell).wrap(new Element("div",{"class": "table-row"}).setStyle({"width": options.width}));
+			map_cell.insert({after:mapobject.linkbox.wrap(new Element("div", {"class": "table-cell"}))});
+		}
+		else{
+			// just set the map container to the given size
+			container.setStyle({"width": options.width, "height": options.height});
+		}
 
 		// set the base tiles and add a little copyright info
 		L.tileLayer("https://tiles.guildwars2.com/{continent_id}/{floor_id}/{z}/{x}/{y}.jpg", {
+			errorTileUrl: options.i18n.errortile,
 			minZoom: 0,
-			maxZoom: mz,
+			maxZoom: options.max_zoom,
 			continuousWorld: true,
-			continent_id: continent_id,
-			floor_id: floor_id,
-			attribution: 'Map data and imagery: <a href="https://forum-en.guildwars2.com/forum/community/api/API-Documentation" target="_blank">GW2 Maps API</a>, '+
-				'&copy;<a href="http://www.arena.net/" target="_blank">ArenaNet</a>'
-		}).addTo(leaf);
+			continent_id: options.continent_id,
+			floor_id: options.floor_id,
+			attribution: options.i18n.attribution+': <a href="https://forum-en.guildwars2.com/forum/community/api/API-Documentation" target="_blank">GW2 Maps API</a>, &copy;<a href="http://www.arena.net/" target="_blank">ArenaNet</a>'
+		}).addTo(mapobject.map);
 
-		// add a Layer control
-		if(map_controls){
-			L.control.layers(null, {
-				"Points of Interest": pois,
-				"Sector Names": sectors,
-				"Skill Challenges": skills,
-				"Tasks": tasks,
-				"Vistas": vistas,
-				"Waypoints": waypoints
-			}).addTo(leaf);
+		// add layergroups and show them on the map
+		mapobject.layers[options.i18n.event] = L.layerGroup();
+		mapobject.layers[options.i18n.landmark] = L.layerGroup();
+		mapobject.layers[options.i18n.polyline] = L.layerGroup();
+		mapobject.layers[options.i18n.players] = L.layerGroup();
+		mapobject.layers[options.i18n.players].addTo(mapobject.map);
+		mapobject.layers[options.i18n.skill] = L.layerGroup();
+		mapobject.layers[options.i18n.task] = L.layerGroup();
+		mapobject.layers[options.i18n.vista] = L.layerGroup();
+		mapobject.layers[options.i18n.waypoint] = L.layerGroup();
+		mapobject.layers[options.i18n.waypoint].addTo(mapobject.map);
+		mapobject.layers[options.i18n.sector] = L.layerGroup();
+		// showing all the stuff on the initial map would be confusing in most cases,
+		// so we'll show it automatically only on higher zoom levels - it's in the layer menu anyway
+		if(mapobject.map.getZoom() > 3){
+			mapobject.layers[options.i18n.landmark].addTo(mapobject.map);
+			mapobject.layers[options.i18n.skill].addTo(mapobject.map);
+			mapobject.layers[options.i18n.task].addTo(mapobject.map);
+			mapobject.layers[options.i18n.vista].addTo(mapobject.map);
+		}
+		if(mapobject.map.getZoom() > 4){
+			mapobject.layers[options.i18n.polyline].addTo(mapobject.map);
+		}
+		if(options.region_id && options.map_id || mapobject.map.getZoom() > 5){
+			mapobject.layers[options.i18n.sector].addTo(mapobject.map);
+			mapobject.layers[options.i18n.event].addTo(mapobject.map);
 		}
 
-		// magically display/remove sector names
-		leaf.on("zoomend", function(){
-			if(leaf.getZoom() > 4){
-				sectors.addTo(leaf);
-			}
-			else{
-				leaf.removeLayer(sectors);
-			}
-		});
-
-		// you may specify more mapevent handlers over here - for example a click handler:
-		leaf.on("click", function(e) {
-			console.log("You clicked the map at "+leaf.project(e.latlng));
-		});
-
-		// show stuff on the map
-		pois.addTo(leaf);
-		skills.addTo(leaf);
-		tasks.addTo(leaf);
-		vistas.addTo(leaf);
-		waypoints.addTo(leaf);
-		// showing the sector names on the initial map would be confusing in most cases,
-		// so we'll show them automatically only on higher zoom levels - they're anyway in the layer menu
-		if(region_id && map_id || leaf.getZoom() > 4){
-			sectors.addTo(leaf);
+		// a Layer control if wanted
+		if(options.map_controls){
+			L.control.layers(null, mapobject.layers).addTo(mapobject.map);
 		}
 
-		// get the JSON and start the action
-		new Ajax.Request("https://api.guildwars2.com/v1/map_floor.json?continent_id="+continent_id+"&floor="+floor_id+"&lang="+lang ,{
-			method: "get",
-			onSuccess: function(request){
-				var bounds, clamp, data = request.responseJSON;
-				// the map has a clamped view? ok, we use this as bound
-				if(data.clamped_view){
-					clamp = data.clamped_view;
-					bounds = new L.LatLngBounds(leaf.unproject([clamp[0][0], clamp[1][1]], mz), leaf.unproject([clamp[1][0], clamp[0][1]], mz));
-					leaf.setMaxBounds(bounds).fitBounds(bounds);
-				}
-				// we display a specific map? so lets use the maps bounds
-				else if(region_id && map_id){
-					clamp = data.regions[region_id].maps[map_id].continent_rect;
-					bounds = new L.LatLngBounds(leaf.unproject([clamp[0][0], clamp[1][1]], mz), leaf.unproject([clamp[1][0], clamp[0][1]], mz)).pad(0.2);
-					leaf.setMaxBounds(bounds).fitBounds(bounds);
-					// we have also a poi? lets find and display it...
-					if(poi_id && poi_type){
-						var a, n;
-						switch(poi_type){
-							//case "skill": a = data.regions[region_id].maps[map_id].skill_challenges; break; //skill challenges don't have ids yet
-							case 1:
-								a = data.regions[region_id].maps[map_id].points_of_interest;
-								n = "poi_id";
-								break;
-							case 2:
-								a = data.regions[region_id].maps[map_id].sectors;
-								n = "sector_id";
-								break;
-							case 3:
-								a = data.regions[region_id].maps[map_id].tasks;
-								n = "task_id";
-								break;
-						}
+		// we have polylines to display?
+		if(options.polyline && options.polyline.length > 7){
+			GW2Maps.parse_polylines(mapobject, options);
+		}
 
-						// workaround to get the given poi_id
-						// life could be so easy with data.regions[region_id].maps[map_id].points_of_interest[poi_id];
-						a.each(function(p){
-							if(p[n] == poi_id){
-								leaf.panTo(leaf.unproject(p.coord, mz)).setZoom(mz);
+		// magically display/remove icons
+		// the checkbox in the layer menu will not update - bug?
+		mapobject.map.on("zoomend", function(){
+			var z = mapobject.map.getZoom();
+			z > 5 ? mapobject.layers[options.i18n.event].addTo(mapobject.map) : mapobject.map.removeLayer(mapobject.layers[options.i18n.event]);
+			z > 5 ? mapobject.layers[options.i18n.sector].addTo(mapobject.map) : mapobject.map.removeLayer(mapobject.layers[options.i18n.sector]);
+			z > 4 ? mapobject.layers[options.i18n.polyline].addTo(mapobject.map) : mapobject.map.removeLayer(mapobject.layers[options.i18n.polyline]);
+			z > 3 ? mapobject.layers[options.i18n.landmark].addTo(mapobject.map) : mapobject.map.removeLayer(mapobject.layers[options.i18n.landmark]);
+			z > 3 ? mapobject.layers[options.i18n.skill].addTo(mapobject.map) : mapobject.map.removeLayer(mapobject.layers[options.i18n.skill]);
+			z > 3 ? mapobject.layers[options.i18n.task].addTo(mapobject.map) : mapobject.map.removeLayer(mapobject.layers[options.i18n.task]);
+			z > 3 ? mapobject.layers[options.i18n.vista].addTo(mapobject.map) : mapobject.map.removeLayer(mapobject.layers[options.i18n.vista]);
+		});
+
+		// you may specify more mapevent handlers over here - for example a click handler to annoy people ;)
+		mapobject.map.on("click", function(event){
+//			L.popup().setLatLng(event.latlng).setContent(mapobject.map.project(event.latlng, options.max_zoom).toString()).openOn(mapobject.map);
+			console.log(mapobject.map.project(event.latlng, options.max_zoom).toString());
+		});
+
+		new Ajax.Request("https://api.guildwars2.com/v1/map_floor.json?continent_id="+options.continent_id+"&floor="+options.floor_id+"&lang="+options.i18n.lang ,{method: "get",
+			onSuccess: function(floordata){
+				new Ajax.Request("https://api.guildwars2.com/v1/event_details.json?lang="+options.i18n.lang ,{method: "get",
+					onSuccess: function(event_response){
+						// get that event_details.json sorted by map
+						var eventdata = {};
+						$H(event_response.responseJSON.events).each(function(e){
+							if(typeof eventdata[e[1].map_id] === "undefined"){
+								eventdata[e[1].map_id] = {};
 							}
+							eventdata[e[1].map_id][e[0]] = e[1];
 						});
+						GW2Maps.parse_response(mapobject, options, floordata.responseJSON, eventdata);
+					},
+					onFailure: function(err){
+						console.log(err);
+						//...
 					}
-				}
-				// else use the texture_dims as bounds
-				else{
-					bounds = new L.LatLngBounds(leaf.unproject([0, data.texture_dims[1]], mz), leaf.unproject([data.texture_dims[0], 0], mz));
-					leaf.setMaxBounds(bounds).setView(bounds.getCenter(), 0);
-				}
-
-				// ok, we want to display a single map
-				if(region_id && map_id){
-					parse_mapdata(data.regions[region_id].maps[map_id]);
-				}
-				// else render anything we get
-				else{
-					$H(data.regions).each(function(region){
-						$H(region[1].maps).each(function(map){
-							parse_mapdata(map[1]);
-						});
-					});
-				}
+				});
+			},
+			onFailure: function(err){
+				console.log(err);
+				// if we don't get any floordata, we try at least to render the map
+				options.region_id = false;
+				GW2Maps.parse_response(mapobject, options, {texture_dims: options.continent_id === 1 ? [32768,32768] : [16384,16384], regions:[]}, {});
+				//mapobject.linkbox.append();
 			}
 		});
-	});
-}
+		// return the mapobject for later use
+		return mapobject;
+	},
+
+	/**
+	 * @param mapobject
+	 * @param options
+	 * @param floordata
+	 * @param eventdata
+	 */
+	parse_response: function(mapobject, options, floordata, eventdata){
+		var bounds, clamp, ev,
+			p2ll = function(coords){
+				return mapobject.map.unproject(coords, options.max_zoom);
+			};
+		// the map has a clamped view? ok, we use this as bound
+		if(floordata.clamped_view){
+			clamp = floordata.clamped_view;
+			bounds = new L.LatLngBounds(p2ll([clamp[0][0], clamp[1][1]]), p2ll([clamp[1][0], clamp[0][1]])).pad(0.2);
+		}
+		// we display a specific map? so lets use the maps bounds
+		else if(options.region_id && options.map_id){
+			clamp = floordata.regions[options.region_id].maps[options.map_id].continent_rect;
+			bounds = new L.LatLngBounds(p2ll([clamp[0][0], clamp[1][1]]), p2ll([clamp[1][0], clamp[0][1]])).pad(0.4);
+		}
+		// else use the texture_dims as bounds
+		else{
+//			bounds = new L.LatLngBounds(p2ll([0, (1 << options.max_zoom)*256]), p2ll([(1 << options.max_zoom)*256, 0]));
+			bounds = new L.LatLngBounds(p2ll([0, floordata.texture_dims[1]]), p2ll([floordata.texture_dims[0], 0])).pad(0.1);
+		}
+		mapobject.map.setMaxBounds(bounds).fitBounds(bounds);
+
+		// ok, we want to display a single map
+		if(options.region_id && options.map_id){
+			ev = typeof eventdata[options.map_id] !== "undefined" ? eventdata[options.map_id] : false;
+			GW2Maps.parse_map(mapobject, options, floordata.regions[options.region_id].maps[options.map_id], ev);
+		}
+		// else render anything we get
+		else{
+			$H(floordata.regions).each(function(region){
+				$H(region[1].maps).each(function(map){
+					GW2Maps.parse_map(mapobject, options, map[1], typeof eventdata[map[0]] !== "undefined" ? eventdata[map[0]] : false);
+				});
+			});
+		}
+	},
+
+	/**
+	 * the no more so ugly map parser of uglyness (Anet, please get your data straight!)
+	 *
+	 * @param mapobject
+	 * @param options
+	 * @param map
+	 * @param eventdata
+	 */
+	parse_map: function(mapobject, options, map, eventdata){
+		var pois = {task: [], event: [], landmark: [], skill: [], vista: [], waypoint: [], sector: []},
+			sort = {task: [], event: [], landmark: [], skill: [], vista: [], waypoint: [], sector: []},
+			recalc_event_coords = function(cr, mr, p){
+				// don't look at it. really! it will melt your brain and make your eyes bleed!
+				return [Math.round(cr[0][0]+(cr[1][0]-cr[0][0])*(p[0]-mr[0][0])/(mr[1][0]-mr[0][0])),Math.round(cr[0][1]+(cr[1][1]-cr[0][1])*(1-(p[1]-mr [0][1])/(mr[1][1]-mr[0][1])))]
+			};
+		// pois
+		map.points_of_interest.each(function(p){
+			if(p.type == "waypoint"){
+				sort.waypoint.push(p.name);
+				pois.waypoint.push({
+					id: p.poi_id,
+					type: p.type,
+					coords: p.coord,
+					title: p.name,
+					text: p.name,
+					popup: p.name+"<br />id:"+p.poi_id+"<br />"+p.coord.toString()
+				});
+			}
+			if(p.type == "landmark"){
+				sort.landmark.push(p.name);
+				pois.landmark.push({
+					id: p.poi_id,
+					type: p.type,
+					coords: p.coord,
+					title: p.name,
+					text: p.name,
+					popup: '<a href="'+options.i18n.wiki+encodeURIComponent(p.name)+'" target="_blank">'+p.name+"</a><br />id:"+p.poi_id
+				});
+			}
+			if(p.type == "vista"){
+				sort.vista.push(p.poi_id);
+				pois.vista.push({
+					type: p.type,
+					coords:p.coord,
+					title: "id:"+p.poi_id,
+					text: p.name+' '+p.poi_id,
+					popup: "id:"+p.poi_id
+				});
+			}
+		});
+		// tasks (hearts)
+		map.tasks.each(function(p){
+			sort.task.push(p.level);
+			pois.task.push({
+				id: p.task_id,
+				type: "task",
+				coords: p.coord,
+				title: p.objective+" ("+p.level+")",
+				text: "("+p.level+") "+p.objective,
+				popup: '<a href="'+options.i18n.wiki+encodeURIComponent(p.objective.replace(/\.$/, ""))+'" target="_blank">'+p.objective+"</a> ("+p.level+")<br />id:"+p.task_id
+			});
+		});
+		// skill challenges
+		map.skill_challenges.each(function(p){
+			sort.skill.push(p.coord.toString());
+			pois.skill.push({
+				id: null,
+				type: "skill",
+				coords: p.coord,
+				title: p.coord.toString(),
+				text: p.name+' '+p.coord.toString(),
+				popup: p.name+' '+p.coord.toString()
+			});
+		});
+		// sector names
+		map.sectors.each(function(p){
+			sort.sector.push(p.name);
+			pois.sector.push({
+				id: p.sector_id,
+				type: "sector",
+				coords:p.coord,
+				title: p.name+", id:"+p.sector_id,
+				icon_text: p.name,
+				icon_text_class: "sector_text",
+				text: p.name,
+				popup: false
+			});
+		});
+		// eventdata
+		if(eventdata){
+			$H(eventdata).each(function(p){
+				sort.event.push(p[1].level);
+				pois.event.push({
+					id: p[0],
+					type: "event",
+					coords: recalc_event_coords(map.continent_rect,map.map_rect,p[1].location.center),
+					title: p[1].name+" ("+p[1].level+")",
+					text: "("+p[1].level+") "+p[1].name,
+					popup: '<a href="'+options.i18n.wiki+encodeURIComponent(p[1].name.replace(/\.$/, ""))+'" target="_blank">'+p[1].name+"</a> ("+p[1].level+")<br />id:"+p[0]
+				});
+			});
+		}
+		// loop out the map points
+		mapobject.linkbox.insert(new Element("div", {"class":"header"}).update(map.name));
+		$H(pois).each(function(points){
+			if(points[1].length > 0){
+				// phpJS... <3
+				phpjs.array_multisort(sort[points[0]], "SORT_ASC", points[1]);
+				mapobject.linkbox.insert(new Element("div", {"class":"header sub"}).update(options.i18n[points[0]]));
+				points[1].each(function(p){
+					GW2Maps.parse_point(mapobject, options, p);
+				});
+			}
+		});
+	},
+
+	/**
+	 * @param mapobject
+	 * @param options
+	 * @param point
+	 */
+	parse_point: function(mapobject, options, point){
+		var i = options.i18n["icon_"+point.type],
+			icon,
+			pan = function(p,text){
+				var ll = mapobject.map.unproject(p, options.max_zoom);
+				mapobject.map.panTo(ll);
+				if(text){
+					L.popup({offset:new L.Point(0,-5)}).setLatLng(ll).setContent(text).openOn(mapobject.map);
+				}
+			};
+
+		if(point.type === "sector"){
+			icon = L.divIcon({className: point.icon_text_class, html: point.icon_text});
+		}
+		else if(point.type === "event"){
+			//...
+			icon = L.icon({iconUrl: i.link, iconSize: i.size, popupAnchor:[0, -i.size[1]/2]});
+		}
+		else{
+			icon = L.icon({iconUrl: i.link, iconSize: i.size, popupAnchor:[0, -i.size[1]/2]});
+		}
+
+		var marker = L.marker(mapobject.map.unproject(point.coords, options.max_zoom), {title: point.title, icon: icon});
+
+		if(point.popup){
+			marker.bindPopup(point.popup);
+		}
+		mapobject.layers[options.i18n[point.type]].addLayer(marker);
+		mapobject.linkbox.insert(new Element("div").insert(i ? new Element("img", {"src":i.link}).setStyle({"width":"16px", "height":"16px"}) : '').insert(' '+point.text).observe("click", function(){
+			pan(point.coords,point.popup);
+		}));
+
+		// we have also a poi? lets find and display it...
+		if(options.poi_id && point.id === options.poi_id && options.poi_type && point.type === options.poi_type){
+			pan(point.coords,point.popup);
+			mapobject.map.setZoom(options.max_zoom);
+		}
+	},
+
+	/**
+	 * @param mapobject
+	 * @param options
+	 */
+	parse_polylines: function(mapobject, options){
+		var lines = options.polyline.split(";");
+		lines.each(function(l){
+			var coords = l.split(" "), line = [], opts = {};
+			coords.each(function(c){
+				if(c.match(/\d{1,5},\d{1,5}/)){
+					var point = c.split(",");
+					line.push(mapobject.map.unproject(point, options.max_zoom));
+				}
+				if(c.match(/(color|width|opacity|style|type)=(([0-9a-f]{3}){1,2}|\d{1,3}|(arrow|marker|dash))/i)){
+					var opt = c.toLowerCase().split("=");
+					opts[opt[0]] = opt[1];
+				}
+			});
+			var color = typeof opts.color !== "undefined" ? "#"+opts.color : "#ffe500",
+				width = typeof opts.width !== "undefined" ? phpjs.intval(opts.width) : 3,
+				opacity = typeof opts.opacity !== "undefined" ? phpjs.intval(opts.opacity)/100 : 0.8,
+				dash = opts.style === "dash"  ? "30,15,10,15" : "";
+
+			line = L.polyline(line, {color: color, weight: width, opacity: opacity, dashArray: dash});
+			mapobject.layers[options.i18n.polyline].addLayer(line);
+
+			if(typeof opts.type !== "undefined"){
+				var patterns = [];
+				if(opts.type === "arrow"){
+					patterns.push({offset: 50, repeat: "150px", symbol: new L.Symbol.ArrowHead({pixelSize: 15, polygon: false, pathOptions: {stroke: true, color: color, weight: width, opacity: opacity}})});
+				}
+				if(opts.type === "marker"){
+					patterns.push({offset: 0, repeat: "100%", symbol: new L.Symbol.Marker()});
+				}
+				mapobject.layers[options.i18n.polyline].addLayer(L.polylineDecorator(line, {patterns: patterns}));
+			}
+		});
+	},
+
+	/**
+	 *
+	 * dataset {
+	 *     language: int (1=de, 2=en, 3=es, 4=fr),
+	 *     continent_id: (1=Tyria ,2=The Mists),
+	 *     floor_id: int,
+	 *     region_id: non negative int,
+	 *     map_id: non negative int,
+	 *     poi_id: non negative int,
+	 *     poi_type: int (1=landmark, 2=sector, 3=skill, 4=task, 5=vista, 6=waypoint),
+	 *     disable_controls: bool,
+	 *     width: non negative int,
+	 *     w_percent: bool,
+	 *     height: non negative int,
+	 *     h_percent: bool
+	 *     linkbox: non negative int >= 100
+	 * }
+	 *
+	 * @param container
+	 * @returns object
+	 */
+	options: function(container){
+		// make sure that any dataset values are number - for wiki security reasons
+		// (using filter type integer in the widget extension)
+		// exception: the polyline will be a string of comma and space seperated number pairs
+		// like: 16661,16788 17514,15935...
+		// using preg_replace("#[^,;=\-\d\s\w]#", "", $str), so we need to check for valid pairs
+		// i don't bother reading the elements dataset for compatibility reasons
+		var dataset = {};
+		$A(container.attributes).each(function(c){
+			if(c.name.match(/^data-/)){
+				dataset[c.name.substr(5)] = (c.name === "data-polyline") ? c.value : phpjs.intval(c.value);
+			}
+		});
+
+		// check the option values and fall back to defaults if needed
+		var lang = ["en","de","en","es","fr"], // 0 is the default language, change to suit your needs
+			poi_types = [false, "landmark", "sector", "skill", "task", "vista", "waypoint"],
+			continent_id = typeof dataset.continent_id === "number" && dataset.continent_id >=1 && dataset.continent_id <= 2 ? dataset.continent_id : 1;
+
+		return {
+			max_zoom: continent_id == 1 ? 7 : 6,
+			continent_id: continent_id,
+			floor_id: typeof dataset.floor_id === "number" ? dataset.floor_id : 2,
+			region_id: typeof dataset.region_id === "number" && dataset.region_id > 0 ? dataset.region_id : false,
+			map_id: typeof dataset.map_id === "number" && dataset.map_id > 0 ? dataset.map_id : false,
+			poi_id: typeof dataset.poi_id === "number" && dataset.poi_id > 0 ? dataset.poi_id : false,
+			poi_type: typeof dataset.poi_type === "number" && dataset.poi_type > 0 && dataset.poi_type <= 6 ? poi_types[dataset.poi_type] : false,
+			width: typeof dataset.width === "number" && dataset.width > 0 ? dataset.width+(dataset.w_percent == true ? "%" : "px") : "800px",
+			height: typeof dataset.height === "number" && dataset.height > 0 ? dataset.height+(dataset.h_percent == true ? "%" : "px") : "450px",
+			map_controls: dataset.disable_controls != true,
+			linkbox: typeof dataset.linkbox === "number" && dataset.linkbox >= 100 ? dataset.linkbox+"px" : false,
+			polyline: dataset.polyline && dataset.polyline.length > 7 ? dataset.polyline : false,
+			i18n: typeof dataset.language === "number" && dataset.language >=1 && dataset.language <= 4 ? GW2Maps.i18n[lang[dataset.language]] : GW2Maps.i18n[lang[0]]
+		};
+	},
+
+	/**
+	 *
+	 */
+	i18n: {
+		de: {
+			lang: "de",
+			wiki: "http://wiki-de.guildwars2.com/wiki/",
+			icon_event: {link: "http://wiki-de.guildwars2.com/images/7/7a/Event_Angriff_Icon.png", size: [24,24]},
+			icon_landmark: {link: "http://wiki-de.guildwars2.com/images/0/0f/Sehenswürdigkeit_Icon.png", size: [16,16]},
+			icon_skill: {link: "http://wiki-de.guildwars2.com/images/c/c3/Fertigkeitspunkt_Icon.png", size: [20,20]},
+			icon_task: {link: "http://wiki-de.guildwars2.com/images/b/b7/Aufgabe_Icon.png", size: [20,20]},
+			icon_vista: {link: "http://wiki-de.guildwars2.com/images/9/9f/Aussichtspunkt_Icon.png", size: [20,20]},
+			icon_waypoint: {link: "http://wiki-de.guildwars2.com/images/d/df/Wegmarke_Icon.png", size: [24,24]},
+			errortile: "http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+			event: "Events",
+			landmark: "Sehenswürdigkeiten",
+			players: "Spieler",
+			polyline: "Polylinien",
+			sector: "Zonen",
+			skill: "Fertigkeitspunkte",
+			task: "Aufgaben",
+			vista: "Aussichtspunkte",
+			waypoint: "Wegpunkte",
+			attribution: "Kartendaten und -bilder"
+		},
+		en: {
+			lang: "en",
+			wiki: "http://wiki.guildwars2.com/wiki/",
+			icon_event: {link: "http://wiki-de.guildwars2.com/images/7/7a/Event_Angriff_Icon.png", size: [24,24]},
+			icon_landmark: {link: "http://wiki.guildwars2.com/images/f/fb/Point_of_interest.png", size: [20,20]},
+			icon_skill: {link: "http://wiki.guildwars2.com/images/8/84/Skill_point.png", size: [20,20]},
+			icon_task: {link: "http://wiki.guildwars2.com/images/f/f8/Complete_heart_(map_icon).png", size: [20,20]},
+			icon_vista: {link: "http://wiki.guildwars2.com/images/d/d9/Vista.png", size: [20,20]},
+			icon_waypoint: {link: "http://wiki.guildwars2.com/images/d/d2/Waypoint_(map_icon).png", size: [20,20]},
+			errortile: "http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+			event: "Events",
+			landmark: "Points of Interest",
+			players: "Players",
+			polyline: "Polylines",
+			sector: "Sector Names",
+			skill: "Skill Challenges",
+			task: "Tasks",
+			vista: "Vistas",
+			waypoint: "Waypoints",
+			attribution: "Map data and imagery"
+		},
+		// TODO add es & fr language snippets, es icons
+		es: {
+			lang:"es",
+			wiki: "http://wiki-es.guildwars2.com/wiki/",
+			icon_event: {link: "http://wiki-de.guildwars2.com/images/7/7a/Event_Angriff_Icon.png", size: [24,24]},
+			icon_landmark: {link: "http://wiki.guildwars2.com/images/f/fb/Point_of_interest.png", size: [20,20]},
+			icon_skill: {link: "http://wiki.guildwars2.com/images/8/84/Skill_point.png", size: [20,20]},
+			icon_task: {link: "http://wiki.guildwars2.com/images/f/f8/Complete_heart_(map_icon).png", size: [20,20]},
+			icon_vista: {link: "http://wiki.guildwars2.com/images/d/d9/Vista.png", size: [20,20]},
+			icon_waypoint: {link: "http://wiki.guildwars2.com/images/d/d2/Waypoint_(map_icon).png", size: [20,20]},
+			errortile: "http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+			event: "event-es",
+			landmark: "poi-es",
+			players: "players-es",
+			polyline: "polyline-es",
+			sector: "sector-es",
+			skill: "skill-es",
+			task: "task-es",
+			vista: "vista-es",
+			waypoint: "waypoint-es",
+			attribution: "attribution-es"
+		},
+		fr: {
+			lang: "fr",
+			wiki: "http://wiki-fr.guildwars2.com/wiki/",
+			icon_event: {link: "http://wiki-de.guildwars2.com/images/7/7a/Event_Angriff_Icon.png", size: [24,24]},
+			icon_landmark: {link: "http://wiki-fr.guildwars2.com/images/d/d2/Icône_site_remarquable_découvert.png", size: [20,20]},
+			icon_skill: {link: "http://wiki-fr.guildwars2.com/images/5/5c/Progression_défi.png", size: [20,20]},
+			icon_task: {link: "http://wiki-fr.guildwars2.com/images/a/af/Icône_coeur_plein.png", size: [20,20]},
+			icon_vista: {link: "http://wiki-fr.guildwars2.com/images/8/82/Icône_panorama.png", size: [20,20]},
+			icon_waypoint: {link: "http://wiki-fr.guildwars2.com/images/5/56/Progression_passage.png", size: [20,20]},
+			errortile: "http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png",
+			event: "event-fr",
+			landmark: "Sites remarquables",
+			players: "players-fr",
+			polyline: "polyline-fr",
+			sector: "Secteurs",
+			skill: "Défis de compétences",
+			task: "Cœurs",
+			vista: "Panoramas",
+			waypoint: "Points de passage",
+			attribution: "attribution-fr"
+		}
+	}
+};
 
 /**
- *  excerpts from phpJS
+ *  (minified) excerpts from phpJS
  *  @link http://phpjs.org
  */
-function intval(mixed_var, base){
-	// http://kevin.vanzonneveld.net
-	// +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	// +   improved by: stensi
-	// +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	// +   input by: Matteo
-	// +   bugfixed by: Brett Zamir (http://brett-zamir.me)
-	// +   bugfixed by: Rafał Kukawski (http://kukawski.pl)
-	// *     example 1: intval('Kevin van Zonneveld');
-	// *     returns 1: 0
-	// *     example 2: intval(4.2);
-	// *     returns 2: 4
-	// *     example 3: intval(42, 8);
-	// *     returns 3: 42
-	// *     example 4: intval('09');
-	// *     returns 4: 9
-	// *     example 5: intval('1e', 16);
-	// *     returns 5: 30
-	var tmp;
+var phpjs = {
+	intval: function(mixed_var, base){
+		var tmp,
+			type = typeof(mixed_var);
 
-	var type = typeof(mixed_var);
+		if(type === 'boolean'){
+			return +mixed_var;
+		}
+		else if(type === 'string'){
+			tmp = parseInt(mixed_var, base || 10);
+			return (isNaN(tmp) || !isFinite(tmp)) ? 0 : tmp;
+		}
+		else if(type === 'number' && isFinite(mixed_var)){
+			return mixed_var|0;
+		}
+		else{
+			return 0;
+		}
+	},
+	array_multisort: function(arr){
+		var flags = {
+				'SORT_REGULAR': 16,
+				'SORT_NUMERIC': 17,
+				'SORT_STRING': 18,
+				'SORT_ASC': 32,
+				'SORT_DESC': 40
+			},
+		//argl = arguments.length,
+		//args = arguments,
+			sortArrsLength = 0,
+			sortArrs = [[]],
+			sortKeys = [[]],
+			sortFlag = [0],
+			g = 0,
+			i = 0,
+			j,// = 0
+			k = '',
+			l = 0,
+			thingsToSort = [],
+			vkey = 0,
+			zlast = null,
+			nLastSort = [],
+			lastSort = [],
+			lastSorts = [],
+			tmpArray = [],
+			elIndex = 0,
+			sortDuplicator = function(){//a, b
+				return nLastSort.shift();
+			},
+			sortFunctions = [
+				[
+					function(a, b){
+						lastSort.push(a > b ? 1 : (a < b ? -1 : 0));
+						return a > b ? 1 : (a < b ? -1 : 0);
+					},
+					function(a, b){
+						lastSort.push(b > a ? 1 : (b < a ? -1 : 0));
+						return b > a ? 1 : (b < a ? -1 : 0);
+					}
+				],
+				[
+					function(a, b){
+						lastSort.push(a-b);
+						return a-b;
+					},
+					function(a, b){
+						lastSort.push(b-a);
+						return b-a;
+					}
+				],
+				[
+					function(a, b){
+						lastSort.push((a+'') > (b+'') ? 1 : ((a+'') < (b+'') ? -1 : 0));
+						return (a+'') > (b+'') ? 1 : ((a+'') < (b+'') ? -1 : 0);
+					},
+					function(a, b){
+						lastSort.push((b+'') > (a+'') ? 1 : ((b+'') < (a+'') ? -1 : 0));
+						return (b+'') > (a+'') ? 1 : ((b+'') < (a+'') ? -1 : 0);
+					}
+				]
+			];
 
-	if(type === 'boolean'){
-		return +mixed_var;
+		if(Object.prototype.toString.call(arr) === '[object Array]'){
+			sortArrs[0] = arr;
+		}
+		else if(arr && typeof arr === 'object'){
+			for(i in arr){
+				if(arr.hasOwnProperty(i)){
+					sortKeys[0].push(i);
+					sortArrs[0].push(arr[i]);
+				}
+			}
+		}
+		else{
+			return false;
+		}
+
+		var arrMainLength = sortArrs[0].length, sortComponents = [0, arrMainLength];
+
+		for(j = 1; j < arguments.length; j++){
+			if(Object.prototype.toString.call(arguments[j]) === '[object Array]'){
+				sortArrs[j] = arguments[j];
+				sortFlag[j] = 0;
+				if(arguments[j].length !== arrMainLength){
+					return false;
+				}
+			}
+			else if(arguments[j] && typeof arguments[j] === 'object'){
+				sortKeys[j] = [];
+				sortArrs[j] = [];
+				sortFlag[j] = 0;
+				for(i in arguments[j]){
+					if(arguments[j].hasOwnProperty(i)){
+						sortKeys[j].push(i);
+						sortArrs[j].push(arguments[j][i]);
+					}
+				}
+				if(sortArrs[j].length !== arrMainLength){
+					return false;
+				}
+			}
+			else if(typeof arguments[j] === 'string'){
+				var lFlag = sortFlag.pop();
+				if(typeof flags[arguments[j]] === 'undefined' || ((((flags[arguments[j]]) >>> 4)&(lFlag >>> 4)) > 0)){
+					return false;
+				}
+				sortFlag.push(lFlag+flags[arguments[j]]);
+			}
+			else{
+				return false;
+			}
+		}
+
+		for(i = 0; i !== arrMainLength; i++){
+			thingsToSort.push(true);
+		}
+
+		for(i in sortArrs){
+			if(sortArrs.hasOwnProperty(i)){
+				lastSorts = [];
+				tmpArray = [];
+				elIndex = 0;
+				nLastSort = [];
+				lastSort = [];
+
+				if(sortComponents.length === 0){
+					if(Object.prototype.toString.call(arguments[i]) === '[object Array]'){
+						arguments[i] = sortArrs[i]; // args -> arguments
+					}
+					else{
+						for(k in arguments[i]){
+							if(arguments[i].hasOwnProperty(k)){
+								delete arguments[i][k];
+							}
+						}
+						sortArrsLength = sortArrs[i].length;
+						for(j = 0, vkey = 0; j < sortArrsLength; j++){
+							vkey = sortKeys[i][j];
+							arguments[i][vkey] = sortArrs[i][j]; // args -> arguments
+						}
+					}
+					delete sortArrs[i];
+					delete sortKeys[i];
+					continue;
+				}
+
+				var sFunction = sortFunctions[(sortFlag[i]&3)][((sortFlag[i]&8) > 0) ? 1 : 0];
+
+				for(l = 0; l !== sortComponents.length; l += 2){
+					tmpArray = sortArrs[i].slice(sortComponents[l], sortComponents[l+1]+1);
+					tmpArray.sort(sFunction);
+					lastSorts[l] = [].concat(lastSort); // Is there a better way to copy an array in Javascript?
+					elIndex = sortComponents[l];
+					for(g in tmpArray){
+						if(tmpArray.hasOwnProperty(g)){
+							sortArrs[i][elIndex] = tmpArray[g];
+							elIndex++;
+						}
+					}
+				}
+
+				sFunction = sortDuplicator;
+				for(j in sortArrs){
+					if(sortArrs.hasOwnProperty(j)){
+						if(sortArrs[j] === sortArrs[i]){
+							continue;
+						}
+						for(l = 0; l !== sortComponents.length; l += 2){
+							tmpArray = sortArrs[j].slice(sortComponents[l], sortComponents[l+1]+1);
+							nLastSort = [].concat(lastSorts[l]); // alert(l + ':' + nLastSort);
+							tmpArray.sort(sFunction);
+							elIndex = sortComponents[l];
+							for(g in tmpArray){
+								if(tmpArray.hasOwnProperty(g)){
+									sortArrs[j][elIndex] = tmpArray[g];
+									elIndex++;
+								}
+							}
+						}
+					}
+				}
+
+				for(j in sortKeys){
+					if(sortKeys.hasOwnProperty(j)){
+						for(l = 0; l !== sortComponents.length; l += 2){
+							tmpArray = sortKeys[j].slice(sortComponents[l], sortComponents[l+1]+1);
+							nLastSort = [].concat(lastSorts[l]);
+							tmpArray.sort(sFunction);
+							elIndex = sortComponents[l];
+							for(g in tmpArray){
+								if(tmpArray.hasOwnProperty(g)){
+									sortKeys[j][elIndex] = tmpArray[g];
+									elIndex++;
+								}
+							}
+						}
+					}
+				}
+
+				zlast = null;
+				sortComponents = [];
+				for(j in sortArrs[i]){
+					if(sortArrs[i].hasOwnProperty(j)){
+						if(!thingsToSort[j]){
+							if((sortComponents.length&1)){
+								sortComponents.push(j-1);
+							}
+							zlast = null;
+							continue;
+						}
+						if(!(sortComponents.length&1)){
+							if(zlast !== null){
+								if(sortArrs[i][j] === zlast){
+									sortComponents.push(j-1);
+								}
+								else{
+									thingsToSort[j] = false;
+								}
+							}
+							zlast = sortArrs[i][j];
+						}
+						else{
+							if(sortArrs[i][j] !== zlast){
+								sortComponents.push(j-1);
+								zlast = sortArrs[i][j];
+							}
+						}
+					}
+				}
+
+				if(sortComponents.length&1){
+					sortComponents.push(j);
+				}
+				if(Object.prototype.toString.call(arguments[i]) === '[object Array]'){
+					arguments[i] = sortArrs[i]; // args -> arguments
+				}
+				else{
+					for(j in arguments[i]){
+						if(arguments[i].hasOwnProperty(j)){
+							delete arguments[i][j];
+						}
+					}
+
+					sortArrsLength = sortArrs[i].length;
+					for(j = 0, vkey = 0; j < sortArrsLength; j++){
+						vkey = sortKeys[i][j];
+						arguments[i][vkey] = sortArrs[i][j]; // args -> arguments
+					}
+
+				}
+				delete sortArrs[i];
+				delete sortKeys[i];
+			}
+		}
+		return true;
 	}
-	else if(type === 'string'){
-		tmp = parseInt(mixed_var, base || 10);
-		return (isNaN(tmp) || !isFinite(tmp)) ? 0 : tmp;
-	}
-	else if(type === 'number' && isFinite(mixed_var)){
-		return mixed_var|0;
-	}
-	else{
-		return 0;
-	}
-}
+};
+
+
+/*
+ Leaflet polyline decorator https://github.com/bbecquet/Leaflet.PolylineDecorator
+ (c) 2013 Benjamin Becquet
+ */
+L.GeometryUtil={computeAngle:function(a,c){return 180*Math.atan2(c.y-a.y,c.x-a.x)/Math.PI+90},getPointPathPixelLength:function(a){if(2>a.length)return 0;for(var c=0,d=a[0],e=1,g=a.length;e<g;e++)c+=d.distanceTo(d=a[e]);return c},getPixelLength:function(a,c){var d=a instanceof L.Polyline?a.getLatLngs():a;if(2>d.length)return 0;for(var e=0,g=c.latLngToLayerPoint(d[0]),f=1,h=d.length;f<h;f++)e+=g.distanceTo(g=c.latLngToLayerPoint(d[f]));return e},projectPatternOnPath:function(a,c,d,e){for(var g=[],f=0,h=a.length;f<h;f++)g[f]=e.latLngToLayerPoint(a[f]);a=this.projectPatternOnPointPath(g,c,d);f=0;for(h=a.length;f<h;f++)a[f].latLng=e.layerPointToLatLng(a[f].pt);return a},projectPatternOnPointPath:function(a,c,d){var e=[],g=L.GeometryUtil.getPointPathPixelLength(a)*d;c=L.GeometryUtil.interpolateOnPointPath(a,c);e.push(c);if(0<d){a=a.slice(c.predecessor);a[0]=c.pt;for(d=L.GeometryUtil.getPointPathPixelLength(a);g<=d;)c=L.GeometryUtil.interpolateOnPointPath(a,g/d),e.push(c),a=a.slice(c.predecessor),a[0]=c.pt,d=L.GeometryUtil.getPointPathPixelLength(a)}return e},interpolateOnPointPath:function(a,c){var d=a.length;if(2>d)return null;if(0>=c)return{pt:a[0],predecessor:0,heading:L.GeometryUtil.computeAngle(a[0],a[1])};if(1<=c)return{pt:a[d-1],predecessor:d-1,heading:L.GeometryUtil.computeAngle(a[d-2],a[d-1])};if(2==d)return{pt:L.GeometryUtil.interpolateBetweenPoints(a[0],a[1],c),predecessor:0,heading:L.GeometryUtil.computeAngle(a[0],a[1])};for(var e=L.GeometryUtil.getPointPathPixelLength(a),g=b=a[0],f=ratioB=0,h=0,j=1;j<d&&ratioB<c;j++)g=b,f=ratioB,b=a[j],h+=g.distanceTo(b),ratioB=h/e;return{pt:L.GeometryUtil.interpolateBetweenPoints(g,b,(c-f)/(ratioB-f)),predecessor:j-2,heading:L.GeometryUtil.computeAngle(g,b)}},interpolateBetweenPoints:function(a,c,d){return c.x!=a.x?new L.Point(a.x*(1-d)+d*c.x,a.y*(1-d)+d*c.y):new L.Point(a.x,a.y+(c.y-a.y)*d)}};L.RotatedMarker=L.Marker.extend({options:{angle:0},_setPos:function(a){L.Marker.prototype._setPos.call(this,a);if(!L.Browser.ie||L.Browser.ie3d)a=" rotate("+this.options.angle+"deg)",this._icon.style.MozTransform+=a,this._icon.style.MsTransform+=a,this._icon.style.OTransform+=a,this._icon.style.WebkitTransform+=a;else{var c=this.options.angle*L.LatLng.DEG_TO_RAD;a=Math.cos(c);c=Math.sin(c);this._icon.style.filter+=" progid:DXImageTransform.Microsoft.Matrix(sizingMethod='auto expand', M11="+a+", M12="+-c+", M21="+c+", M22="+a+")"}}});L.Symbol=L.Symbol||{};
+L.Symbol.Dash=L.Class.extend({isZoomDependant:!0,options:{pixelSize:10,pathOptions:{}},initialize:function(a){L.Util.setOptions(this,a);this.options.pathOptions.clickable=!1},buildSymbol:function(a,c,d){c=this.options;if(1>=c.pixelSize)return new L.Polyline([a.latLng,a.latLng],c.pathOptions);var e=d.project(a.latLng);a=-(a.heading-90)*L.LatLng.DEG_TO_RAD;a=new L.Point(e.x+c.pixelSize*Math.cos(a+Math.PI)/2,e.y+c.pixelSize*Math.sin(a)/2);e=e.add(e.subtract(a));return new L.Polyline([d.unproject(a),d.unproject(e)],c.pathOptions)}});
+L.Symbol.ArrowHead=L.Class.extend({isZoomDependant:!0,options:{polygon:!0,pixelSize:10,headAngle:60,pathOptions:{stroke:!1,weight:2}},initialize:function(a){L.Util.setOptions(this,a);this.options.pathOptions.clickable=!1},buildSymbol:function(a,c,d){c=this.options;return c.polygon?new L.Polygon(this._buildArrowPath(a,d),c.pathOptions):new L.Polyline(this._buildArrowPath(a,d),c.pathOptions)},_buildArrowPath:function(a,c){var d=c.project(a.latLng),e=-(a.heading-90)*L.LatLng.DEG_TO_RAD,g=this.options.headAngle/2*L.LatLng.DEG_TO_RAD,f=e+g,e=e-g,f=new L.Point(d.x-this.options.pixelSize*Math.cos(f),d.y+this.options.pixelSize*Math.sin(f)),d=new L.Point(d.x-this.options.pixelSize*Math.cos(e),d.y+this.options.pixelSize*Math.sin(e));return[c.unproject(f),a.latLng,c.unproject(d)]}});
+L.Symbol.Marker=L.Class.extend({isZoomDependant:!1,options:{markerOptions:{},rotate:!1},initialize:function(a){L.Util.setOptions(this,a);this.options.markerOptions.clickable=!1;this.options.markerOptions.draggable=!1},buildSymbol:function(a){return this.options.rotate?(this.options.markerOptions.angle=a.heading,new L.RotatedMarker(a.latLng,this.options.markerOptions)):new L.Marker(a.latLng,this.options.markerOptions)}});
+L.PolylineDecorator=L.LayerGroup.extend({options:{patterns:[]},initialize:function(a,c){L.LayerGroup.prototype.initialize.call(this);L.Util.setOptions(this,c);this._polyline=a;this._directionPointCache=[];this._initPatterns()},_initPatterns:function(){this._directionPointCache=[];this._isZoomDependant=!1;this._patterns=[];for(var a,c=0;c<this.options.patterns.length;c++)a=this._parsePatternDef(this.options.patterns[c]),this._patterns.push(a),this._isZoomDependant=this._isZoomDependant||a.isOffsetInPixels||a.isRepeatInPixels||a.symbolFactory.isZoomDependant},setPatterns:function(a){this.options.patterns=a;this._initPatterns();this._softRedraw()},_parsePatternDef:function(a){var c={cache:[],symbolFactory:a.symbol,isOffsetInPixels:!1,isRepeatInPixels:!1};"string"===typeof a.offset&&-1!=a.offset.indexOf("%")?c.offset=parseFloat(a.offset)/100:(c.offset=parseFloat(a.offset),c.isOffsetInPixels=0<c.offset);"string"===typeof a.repeat&&-1!=a.repeat.indexOf("%")?c.repeat=parseFloat(a.repeat)/100:(c.repeat=parseFloat(a.repeat),c.isRepeatInPixels=0<c.repeat);return c},onAdd:function(a){this._map=a;this._draw();if(this._isZoomDependant)this._map.on("zoomend",this._softRedraw,this)},onRemove:function(a){this._map.off("zoomend",this._softRedraw,this);L.LayerGroup.prototype.onRemove.call(this,a)},_buildSymbols:function(a,c){for(var d=[],e=0,g=c.length;e<g;e++)d.push(a.buildSymbol(c[e],this._latLngs,this._map,e,g));return d},_getDirectionPoints:function(a){var c=a.cache[this._map.getZoom()];if("undefined"!=typeof c)return c;this._latLngs=this._polyline instanceof L.Polyline?this._polyline.getLatLngs():this._polyline;if(2>this._latLngs.length)return[];var d;d=null;a.isOffsetInPixels?(d=L.GeometryUtil.getPixelLength(this._latLngs,this._map),c=a.offset/d):c=a.offset;a.isRepeatInPixels?(d=null!=d?d:L.GeometryUtil.getPixelLength(this._latLngs,this._map),d=a.repeat/d):d=a.repeat;c=L.GeometryUtil.projectPatternOnPath(this._latLngs,c,d,this._map);return a.cache[this._map.getZoom()]=c},redraw:function(){this._redraw(!0)},_softRedraw:function(){this._redraw(!1)},_redraw:function(a){this.clearLayers();if(a)for(a=0;a<this._patterns.length;a++)this._patterns[a].cache=[];this._draw()},_drawPattern:function(a){var c=this._getDirectionPoints(a);a=this._buildSymbols(a.symbolFactory,c);for(c=0;c<a.length;c++)this.addLayer(a[c])},_draw:function(){for(var a=0;a<this._patterns.length;a++)this._drawPattern(this._patterns[a])}});L.polylineDecorator=function(a,c){return new L.PolylineDecorator(a,c)};
+
