@@ -133,10 +133,12 @@
 								check.push(p.key);
 							}
 						});
-						// loop through the markers and check for missing ids to hide their marker
+						// loop through the markers and check for missing ids to hide their marker and remove the container from the playerlist
 						$H(m.markers).each(function(marker){
+							console.log(marker.key);
 							if(check.indexOf(marker.key) === -1 && m.markers[marker.key].getMap() !== null){
 								m.markers[marker.key].setMap(null);
+								$(marker.key).remove();
 							}
 						});
 
