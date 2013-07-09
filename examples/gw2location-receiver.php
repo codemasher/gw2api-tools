@@ -6,7 +6,7 @@
  *
  * GW2 location provider backend: Location receiver
  *
- * Location sender by Heimdall:
+ * Location sender by Heimdall.4510:
  * @link https://gw2apicpp.codeplex.com/ (source)
  * @link http://gw2.chillerlan.net/files/gw2location.zip (binaries)
  *
@@ -26,9 +26,10 @@ if(isset($_POST['data']) && !empty($_POST['data'])){
 		sha1($data['account_name']),
 		$data['account_name'],
 		$data['name'],
+		intval($data['profession']),
 		$data['guild_id'],
 		$data['channel_id'],
-		$data['world_id'],
+		intval($data['world_id']) < 0 ? 0 : intval($data['world_id']), // overflow servers return negative values (looks like garbage)
 		$data['map_id'],
 		$data['avatar_position'][0],
 		$data['avatar_position'][1],
@@ -44,10 +45,10 @@ if(isset($_POST['data']) && !empty($_POST['data'])){
 	}
 
 	// add the datatypes to the top of the $references array
-	array_unshift($references, 'sssssiidddi');
+	array_unshift($references, 'sssissiiddii');
 
 	// prepare the SQL statement
-	$sql = 'REPLACE INTO `gw2_player_pos` (`player_uid`, `acc_name`, `char_name`, `guild_id`, `guild_secret`, `world_id`, `map_id`, `pos_x`, `pos_y`, `pos_angle`, `pos_time`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+	$sql = 'REPLACE INTO `gw2_player_pos` (`player_uid`, `acc_name`, `char_name`, `profession` , `guild_id`, `guild_secret`, `world_id`, `map_id`, `pos_x`, `pos_y`, `pos_angle`, `pos_time`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 	$stmt = mysqli_prepare($db, $sql);
 
 	// bind the params to $stmt and execute

@@ -16,6 +16,8 @@ html, body{
 	font-style: italic;
 	font-size: 20px;
 	white-space: nowrap;
+	text-align: center;
+	border: 1px solid #fff;
 }
 
 .table-row{

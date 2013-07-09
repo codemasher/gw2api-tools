@@ -3,24 +3,43 @@
 <head>
 	<meta charset="UTF-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>Guild Wars 2 Maps API</title>
+	<title>Guild Wars 2 Maps API Location tracker</title>
 	<link rel="stylesheet" href="https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia.css" />
 	<link rel="stylesheet" href="https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia-italic.css" />
-	<link rel="stylesheet" href="/css/gw2maps.css" />
+	<link rel="stylesheet" href="../css/gw2maps.css" />
+	<style type="text/css">
+		#players > div{
+			padding: 0.1em;
+			text-align: left;
+			font-size: 20px;
+			cursor: pointer;
+		}
+		#players img{
+			margin: 0 0.25em;
+		}
+	</style>
 </head>
 <body>
-<div class="gw2map" data-width="100" data-w_percent="1" data-height="100" data-h_percent="1" data-continent_id="2" data-floor_id="3"></div>
-<div id="inputs" style="position: absolute; top: 15px; left: 100px; padding: 0.5em; width: 200px; height: 40px; border-radius: 5px; background-color: rgba(255,255,255,0.5); text-align: center;">
-	<input id="key" type="text" placeholder="your channel key" value="blahblub" />
+<div class="gw2map" data-width="100" data-w_percent="1" data-height="100" data-h_percent="1"></div>
+<div style="position: absolute; top: 30px; right: 5px; padding: 0.5em; width: 15em; background-color: rgba(255,255,255,0.5); text-align: center;">
+	<label for="key">channel key </label><input id="key" type="text" placeholder="your channel key" value="blahblub" style="width: 7em;" />
+	<div><a id="show_players" href="#">show players</a></div>
+	<div id="players" style="overflow-y: scroll;display:none;"></div>
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js"></script>
 <script src="https://maps.google.com/maps/api/js?sensor=false"></script>
 
-<script src="/js/gw2maps-gmaps.js"></script>
+<script src="../js/gw2maps-gmaps.js"></script>
 <script>
 	document.observe("dom:loaded",function(){
+		$("show_players").on("click", function(event) {
+			Event.stop(event);
+			$("players").setStyle({"max-height": (document.viewport.getHeight()-120)+"px"});
+			Effect.toggle("players", "blind");
+		});
+
 		$$(".gw2map").each(function(e){
 			// catch the mapobjects
 			var m = GW2Maps.init(e),
@@ -29,36 +48,105 @@
 				},
 				p2ll = function(point){
 					return GW2Maps.fromPointToLatLng(point, max_zoom());
+				},
+				state = ["lime", "orange", "red", "gray"],// online, away, offline, unknown (css color, rgb or hex notation)
+				// TODO: i18n
+				professions = {
+					0: {name: "Unbekannt", icon: "http://wiki-de.guildwars2.com/images/c/ce/Allgemein_Icon.png"},
+					1: {name: "Ingenieur", icon: "http://wiki-de.guildwars2.com/images/c/c9/Ingenieur_Icon.png"},
+					2: {name: "Nekromant", icon: "http://wiki-de.guildwars2.com/images/2/23/Nekromant_Icon.png"},
+					3: {name: "Dieb", icon: "http://wiki-de.guildwars2.com/images/0/07/Dieb_Icon.png"},
+					4: {name: "Elementarmagier", icon: "http://wiki-de.guildwars2.com/images/b/b4/Elementarmagier_Icon.png"},
+					5: {name: "Krieger", icon: "http://wiki-de.guildwars2.com/images/9/90/Krieger_Icon.png"},
+					6: {name: "Waldläufer", icon: "http://wiki-de.guildwars2.com/images/5/5e/Waldläufer_Icon.png"},
+					7: {name: "Mesmer", icon: "http://wiki-de.guildwars2.com/images/0/05/Mesmer_Icon.png"},
+					8: {name: "Wächter", icon: "http://wiki-de.guildwars2.com/images/f/f4/Wächter_Icon.png"}
 				};
 
-			new PeriodicalExecuter(function() {
-				new Ajax.Request("/examples/gw2location-ajax.php", {
+			// hide markers on map switch
+			google.maps.event.addListener(m.map, "maptypeid_changed", function(){
+				$H(m.markers).each(function(marker){
+					m.markers[marker.key].setMap(null);
+				});
+			});
+
+			new PeriodicalExecuter(function(){
+				new Ajax.Request("gw2location-ajax.php", {
 					parameters:{json:Object.toJSON({get: "playerdata", key: $("key").value, continent: m.map.getMapTypeId()})},
 					onSuccess: function(request){
+						var check = [];
 						$H(request.responseJSON).each(function(p){
-							if(p[0].match(/^[a-f0-9]{40}$/i)){
-								if(typeof m.markers[p[0]] === "undefined"){
-									m.markers[p[0]] = new google.maps.Marker({map: m.map, position: p2ll(p[1].pos)});
+							if(p.key.match(/^[a-f0-9]{40}$/i)){
+								var icon = {
+									anchor: new google.maps.Point(10,10) ,
+									path: "M 20,10 0,4 5,10 0,16 z",
+									fillColor: state[p.value.state],
+									fillOpacity:0.8,
+									rotation:p.value.angle,
+									strokeColor: "#000"
+								},
+								popup = new Element("table").insert(
+									new Element("tr").insert(
+										new Element("td", {"style":"width: 44px; text-align: center;"}).update(new Element("img", {"src": professions[p.value.profession].icon, "alt": professions[p.value.profession].name, "style": "width:32px; height: 32px;"}))
+									).insert(
+										new Element("td").update(p.value.charname+"<br />"+p.value.map+", "+p.value.world+"<br />"+p.value.time)
+									)
+								).insert(
+									new Element("tr").insert(
+										new Element("td", {"colspan":2, "style":"text-align: center;"}).update(p.value.guild)
+									)
+								),
+								container = new Element("div").insert(
+									new Element("img", {"src": professions[p.value.profession].icon, "alt":p.value.charname, "style": "width:18px; height: 18px;"})
+								).insert(
+									new Element("span", {"title":p.value.map+", "+p.value.world}).update(p.value.charname)
+								);
+
+								// if theres no marker for the current player, create a new one
+								if(typeof m.markers[p.key] === "undefined"){
+									m.markers[p.key] = new google.maps.Marker({
+										map: m.map,
+										position: p2ll(p.value.pos),
+										icon: icon
+									});
+									m.popups[p.key] = new google.maps.InfoWindow({content: popup});
+									//listen to that marker
+									google.maps.event.addListener(m.markers[p.key], "mouseover", function(){
+										m.popups[p.key].open(m.map, m.markers[p.key]);
+									});
+									google.maps.event.addListener(m.markers[p.key], "mouseout", function(){
+										m.popups[p.key].close(m.map);
+									});
+									// also add a new player-container
+									$("players").insert(
+										new Element("div", {"id": p.key, "data-pos":p.value.pos.toString()}).update(container)
+									);
 								}
+								// else update the existing one
 								else{
-									m.markers[p[0]].setPosition(p2ll(p[1].pos));
+									m.popups[p.key].setContent(popup);
+									m.markers[p.key].setMap(m.map);
+									m.markers[p.key].setIcon(icon);
+									m.markers[p.key].setPosition(p2ll(p.value.pos));
+									$(p.key).update(container);
 								}
-
-								//listen to that marker
-								google.maps.event.addListener(m.markers[p[0]], "mouseover", function(){
-									m.popups.close(m.map);
-									m.popups.setContent(p[1].charname+"<br />"+p[1].map+", "+p[1].world+"<br />"+p[1].time);
-									m.popups.open(m.map, m.markers[p[0]]);
-								});
-
-								google.maps.event.addListener(m.markers[p[0]], "mouseout", function(){
-									m.popups.close(m.map);
-								});
+								check.push(p.key);
 							}
+						});
+						// loop through the markers and check for missing ids to hide their marker
+						$H(m.markers).each(function(marker){
+							if(check.indexOf(marker.key) === -1 && m.markers[marker.key].getMap() !== null){
+								m.markers[marker.key].setMap(null);
+							}
+						});
+
+						// add a listener to the player containers
+						$$("#players > div").invoke("stopObserving").invoke("observe", "click", function(e){
+							m.map.panTo(p2ll(this.readAttribute("data-pos").split(",")));
 						});
 					}
 				});
-			}, 10);
+			}, 5);
 		});
 	});
 </script>
