@@ -19,7 +19,6 @@
  *
  * switch floors for maps with multiple floors e.g. like Rata Sum
  *
- * ...
  *
  */
 
@@ -35,11 +34,10 @@ Ajax.Responders.register({
 			if (/^content-type$/i.test(k) && /^(application\/x-www-form-urlencoded|multipart\/form-data|text\/plain)(;.+)?$/i.test(v)){
 				return original(k, v);
 			}
-			return;
+			return null;
 		});
 	}
 });
-
 
 var GW2Maps = {
 	init: function(container){
@@ -56,13 +54,12 @@ var GW2Maps = {
 			},
 			mapobject = {
 				continent: options.continent_id,
-				layers: {},
 				linkbox: new Element("div", {"class":"linkbox"}).setStyle({"width": options.linkbox, "height": options.height}),
-				map:new google.maps.Map(container, {
+				map: new google.maps.Map(container, {
 					zoom: 3,
 					minZoom: 1,
 					maxZoom: 7,
-					center: options.continent_id === 1 ? p2ll([8100,7300]) : p2ll([10600,14600]),
+					center: new google.maps.LatLng(0,0),
 					streetViewControl: false,
 					panControl: options.map_controls,
 					zoomControl: options.map_controls,
@@ -71,8 +68,9 @@ var GW2Maps = {
 						mapTypeIds: ["1","2"]
 					}
 				}),
-				markers: [],
-				popups: new google.maps.InfoWindow()
+				layers: {},
+				markers: {},
+				popups: []
 			},
 			get_tile = function(coords,zoom){
 				if(coords.y < 0 || coords.x < 0 || coords.y >= (1 << zoom) || coords.x >= (1 << zoom)){
@@ -118,14 +116,6 @@ var GW2Maps = {
 			}
 		});
 
-		// you may specify more mapevent handlers over here - for example a click handler to annoy people ;)
-		google.maps.event.addListener(mapobject.map, "click", function(e){
-			var latlng2pixel = ll2p(e.latLng),
-				pixel2latlng = p2ll([latlng2pixel.x, latlng2pixel.y]);
-			mapobject.popups.setContent("latlng:"+e.latLng.toString()+"<br />pixel:"+latlng2pixel.toString()+"<br />latlng:"+pixel2latlng.toString()+" (from pixel)");
-			mapobject.popups.setPosition(e.latLng);
-			mapobject.popups.open(mapobject.map);
-		});
 
 		// return the mapobject for later use
 		return mapobject;
