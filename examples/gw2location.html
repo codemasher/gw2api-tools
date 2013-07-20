@@ -20,21 +20,21 @@
 	</style>
 </head>
 <body>
-<div class="gw2map" data-width="100" data-w_percent="1" data-height="100" data-h_percent="1"></div>
-<div style="position: absolute; top: 30px; right: 5px; padding: 0.5em; width: 15em; background-color: rgba(255,255,255,0.5); text-align: center;">
-	<label for="key">channel key </label><input id="key" type="text" placeholder="your channel key" value="blahblub" style="width: 7em;" />
-	<div><a id="show_players" href="#">show players</a></div>
-	<div id="players" style="overflow-y: scroll;display:none;"></div>
+<div class="gw2map" data-width="100" data-w_percent="1" data-height="100" data-h_percent="1" data-continent_id="2" data-floor_id="1"></div>
+<div style="position: absolute; top: 30px; right: 5px; padding: 0.5em; width: 18em; background-color: rgba(255,255,255,0.5); text-align: center;">
+	<label for="key">channel key </label><input id="key" type="text" placeholder="your channel key" value="" style="width: 7em;" />
+	<div><a id="toggle_players" href="#">toggle playerlist</a></div>
+	<div id="players" style="overflow-y: scroll;display:block;"></div>
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js"></script>
 <script src="https://maps.google.com/maps/api/js?sensor=false"></script>
 
-<script src="../js/gw2maps-gmaps.js"></script>
+<script src="../js/gw2location-gmaps.js"></script>
 <script>
 	document.observe("dom:loaded",function(){
-		$("show_players").on("click", function(event) {
+		$("toggle_players").on("click", function(event) {
 			Event.stop(event);
 			$("players").setStyle({"max-height": (document.viewport.getHeight()-120)+"px"});
 			Effect.toggle("players", "blind");
@@ -52,21 +52,22 @@
 				state = ["lime", "orange", "red", "gray"],// online, away, offline, unknown (css color, rgb or hex notation)
 				// TODO: i18n
 				professions = {
-					0: {name: "Unbekannt", icon: "http://wiki-de.guildwars2.com/images/c/ce/Allgemein_Icon.png"},
-					1: {name: "Ingenieur", icon: "http://wiki-de.guildwars2.com/images/c/c9/Ingenieur_Icon.png"},
-					2: {name: "Nekromant", icon: "http://wiki-de.guildwars2.com/images/2/23/Nekromant_Icon.png"},
-					3: {name: "Dieb", icon: "http://wiki-de.guildwars2.com/images/0/07/Dieb_Icon.png"},
-					4: {name: "Elementarmagier", icon: "http://wiki-de.guildwars2.com/images/b/b4/Elementarmagier_Icon.png"},
-					5: {name: "Krieger", icon: "http://wiki-de.guildwars2.com/images/9/90/Krieger_Icon.png"},
-					6: {name: "Waldläufer", icon: "http://wiki-de.guildwars2.com/images/5/5e/Waldläufer_Icon.png"},
+					0: {name: "Unknown", icon: "http://wiki-de.guildwars2.com/images/c/ce/Allgemein_Icon.png"},
+					1: {name: "Engineer", icon: "http://wiki-de.guildwars2.com/images/c/c9/Ingenieur_Icon.png"},
+					2: {name: "Necromancer", icon: "http://wiki-de.guildwars2.com/images/2/23/Nekromant_Icon.png"},
+					3: {name: "Thief", icon: "http://wiki-de.guildwars2.com/images/0/07/Dieb_Icon.png"},
+					4: {name: "Elementalist", icon: "http://wiki-de.guildwars2.com/images/b/b4/Elementarmagier_Icon.png"},
+					5: {name: "Warrior", icon: "http://wiki-de.guildwars2.com/images/9/90/Krieger_Icon.png"},
+					6: {name: "Ranger", icon: "http://wiki-de.guildwars2.com/images/5/5e/Waldläufer_Icon.png"},
 					7: {name: "Mesmer", icon: "http://wiki-de.guildwars2.com/images/0/05/Mesmer_Icon.png"},
-					8: {name: "Wächter", icon: "http://wiki-de.guildwars2.com/images/f/f4/Wächter_Icon.png"}
+					8: {name: "Guardian", icon: "http://wiki-de.guildwars2.com/images/f/f4/Wächter_Icon.png"}
 				};
 
-			// hide markers on map switch
+			// hide markers and player containers on map switch
 			google.maps.event.addListener(m.map, "maptypeid_changed", function(){
 				$H(m.markers).each(function(marker){
 					m.markers[marker.key].setMap(null);
+					$(marker.key).hide();
 				});
 			});
 
@@ -77,6 +78,7 @@
 						var check = [];
 						$H(request.responseJSON).each(function(p){
 							if(p.key.match(/^[a-f0-9]{40}$/i)){
+								// marker icon - SVG path
 								var icon = {
 									anchor: new google.maps.Point(10,10) ,
 									path: "M 20,10 0,4 5,10 0,16 z",
@@ -85,21 +87,28 @@
 									rotation:p.value.angle,
 									strokeColor: "#000"
 								},
+								guild_tag = (p.value.guild.tag) ? " ["+p.value.guild.tag+"]" : "",
+								// popup content (i know, i can get that easier, but this looks cooler XD)
 								popup = new Element("table").insert(
 									new Element("tr").insert(
-										new Element("td", {"style":"width: 44px; text-align: center;"}).update(new Element("img", {"src": professions[p.value.profession].icon, "alt": professions[p.value.profession].name, "style": "width:32px; height: 32px;"}))
+										new Element("td", {"style":"width: 44px; text-align: center;"}).update(
+											new Element("img", {"src": professions[p.value.profession].icon, "alt": professions[p.value.profession].name, "style": "width:32px; height: 32px;"})
+										)
 									).insert(
 										new Element("td").update(p.value.charname+"<br />"+p.value.map+", "+p.value.world+"<br />"+p.value.time)
 									)
 								).insert(
 									new Element("tr").insert(
-										new Element("td", {"colspan":2, "style":"text-align: center;"}).update(p.value.guild)
+										new Element("td", {"colspan":2, "style":"text-align: center;"}).update(p.value.guild.name+guild_tag)
 									)
 								),
+								// playerlist content
 								container = new Element("div").insert(
 									new Element("img", {"src": professions[p.value.profession].icon, "alt":p.value.charname, "style": "width:18px; height: 18px;"})
 								).insert(
-									new Element("span", {"title":p.value.map+", "+p.value.world}).update(p.value.charname)
+									new Element("radio",{"value":p.key})
+								).insert(
+									new Element("span", {"title":p.value.map+", "+p.value.world}).update(p.value.charname+guild_tag)
 								);
 
 								// if theres no marker for the current player, create a new one
@@ -118,8 +127,9 @@
 										m.popups[p.key].close(m.map);
 									});
 									// also add a new player-container
+									// TODO: sort players
 									$("players").insert(
-										new Element("div", {"id": p.key, "data-pos":p.value.pos.toString()}).update(container)
+										new Element("div", {"id": p.key, "data-pos":p.value.pos.toString(), "data-continent": p.value.continent}).update(container)
 									);
 								}
 								// else update the existing one
@@ -128,27 +138,27 @@
 									m.markers[p.key].setMap(m.map);
 									m.markers[p.key].setIcon(icon);
 									m.markers[p.key].setPosition(p2ll(p.value.pos));
-									$(p.key).update(container);
+									$(p.key).writeAttribute({"data-pos":p.value.pos.toString()}).update(container).show();
 								}
 								check.push(p.key);
 							}
 						});
-						// loop through the markers and check for missing ids to hide their marker and remove the container from the playerlist
+
+						// loop through the markers and check for missing ids to hide their marker and the container from the playerlist
 						$H(m.markers).each(function(marker){
-							console.log(marker.key);
 							if(check.indexOf(marker.key) === -1 && m.markers[marker.key].getMap() !== null){
 								m.markers[marker.key].setMap(null);
-								$(marker.key).remove();
+								$(marker.key).hide();
 							}
 						});
 
 						// add a listener to the player containers
-						$$("#players > div").invoke("stopObserving").invoke("observe", "click", function(e){
+						$$("#players > div").invoke("stopObserving").invoke("observe", "click", function(){
 							m.map.panTo(p2ll(this.readAttribute("data-pos").split(",")));
 						});
 					}
 				});
-			}, 5);
+			}, 30);
 		});
 	});
 </script>
