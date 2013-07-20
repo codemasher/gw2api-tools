@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>GW2Maps</title>
+	<style type="text/css">
+		html, body, #gw2map{
+			margin: 0;
+			padding: 0;
+			height: 100%;
+		}
+	</style>
+</head>
+<body>
+	<div id="gw2map"></div>
+	<script src="https://maps.google.com/maps/api/js?sensor=false"></script>
+	<script>
+		function fromLatLngToPoint(ll, max_zoom){
+			var point = new google.maps.Point(0, 0),
+				origin = new google.maps.Point(128, 128),
+				tiles = 1 << max_zoom,
+				bound = function(value, min, max){
+					if (min != null) value = Math.max(value, min);
+					if (max != null) value = Math.min(value, max);
+					return value;
+				},
+				sin_y = bound(Math.sin(ll.lat() * (Math.PI / 180)), -0.9999, 0.9999);
+			point.x = origin.x + ll.lng() * (256 / 360);
+			point.y = origin.y + 0.5 * Math.log((1 + sin_y) / (1 - sin_y)) * -(256 / (2 * Math.PI));
+			return new google.maps.Point(Math.floor(point.x * tiles), Math.floor(point.y * tiles));
+		}
+
+		function fromPointToLatLng(point, max_zoom) {
+			var size = (1 << max_zoom) * 256,
+				lat = (2 * Math.atan(Math.exp((point.y - size/2) / -(size/(2 * Math.PI)))) - (Math.PI / 2)) * (180/Math.PI),
+				lng = (point.x - size/2) * (360/size);
+			return new google.maps.LatLng(lat, lng);
+		}
+
+		(function(){
+			// the map object
+			var gmap = new google.maps.Map(document.getElementById("gw2map") , {
+					zoom: 3,
+					minZoom: 1,
+					maxZoom: 7,
+					center: new google.maps.LatLng(0, 0),
+					streetViewControl: false,
+					mapTypeId: "1", // string for gmaps' sake
+					mapTypeControlOptions: {
+						mapTypeIds: ["1","2"]
+					}
+				}),
+				max_zoom = function(){
+					return gmap.getMapTypeId() === "1" ? 7 : 6
+				},
+				ll2p = function(latlng){
+					return fromLatLngToPoint(latlng, max_zoom());
+				},
+				p2ll = function(point){
+					return fromPointToLatLng(point, max_zoom());
+				},
+				get_tile = function(coords,zoom){
+					if(coords.y < 0 || coords.x < 0 || coords.y >= (1 << zoom) || coords.x >= (1 << zoom)){
+						return "http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png";
+					}
+					return "https://tiles.guildwars2.com/"+gmap.getMapTypeId()+"/1/"+zoom+"/"+coords.x+"/"+coords.y+".jpg";
+				},
+				tile_size = new google.maps.Size(256,256),
+				tyria = new google.maps.ImageMapType({
+					maxZoom: 7,
+					alt: "Tyria",
+					name: "Tyria",
+					tileSize: tile_size,
+					getTileUrl: get_tile
+				}),
+				mists = new google.maps.ImageMapType({
+					maxZoom: 6,
+					alt: "The Mists",
+					name: "The Mists",
+					tileSize: tile_size,
+					getTileUrl: get_tile
+				}),
+				popup = new google.maps.InfoWindow();
+
+			gmap.mapTypes.set("1",tyria);
+			gmap.mapTypes.set("2",mists);
+
+			google.maps.event.addListener(gmap, "click", function(e){
+				var latlng2pixel = ll2p(e.latLng),
+					pixel2latlng = p2ll(latlng2pixel);
+				popup.setContent("latlng:"+e.latLng.toString()+"<br />pixel:"+latlng2pixel.toString()+"<br />latlng:"+pixel2latlng.toString()+" (from pixel)");
+				popup.setPosition(e.latLng);
+				popup.open(gmap);
+			});
+
+		})()
+	</script>
+</body>
+</html>
