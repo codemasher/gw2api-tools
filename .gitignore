@@ -5,6 +5,14 @@
 .idea/
 
 #################
+## Eclipse
+#################
+
+.settings/
+.buildpath
+.project
+
+#################
 ## Misc
 #################
 
@@ -12,5 +20,7 @@ img/background/*.png
 img/cache/*.png
 img/foreground/*.png
 img/wvw/*
+locator/
+inc/mysqli.inc.php
 .htaccess
 .gitignore
