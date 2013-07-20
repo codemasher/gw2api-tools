@@ -273,7 +273,7 @@ var GW2Maps = {
 				icon_text: this.name,
 				icon_text_class: "sector_text",
 				text: this.name,
-				popup: false
+				popup: '<a href="'+options.i18n.wiki+encodeURIComponent(this.name)+'" target="_blank">'+this.name+"</a><br />id:"+this.sector_id
 			});
 		});
 		// events
@@ -323,7 +323,7 @@ var GW2Maps = {
 			icn;
 
 		if(point.type === "sector"){
-			icn = L.divIcon({className: point.icon_text_class, html: point.icon_text});
+			icn = L.divIcon({iconSize: [300,30] ,className: point.icon_text_class, html: point.icon_text});
 		}
 		else if(point.type === "event"){
 			//...
@@ -430,7 +430,7 @@ var GW2Maps = {
 		return {
 			max_zoom: continent_id == 1 ? 7 : 6,
 			continent_id: continent_id,
-			floor_id: typeof dataset.floor_id === "number" ? dataset.floor_id : 2,
+			floor_id: typeof dataset.floor_id === "number" ? dataset.floor_id : 1,
 			region_id: typeof dataset.region_id === "number" && dataset.region_id > 0 ? dataset.region_id : false,
 			map_id: typeof dataset.map_id === "number" && dataset.map_id > 0 ? dataset.map_id : false,
 			poi_id: typeof dataset.poi_id === "number" && dataset.poi_id > 0 ? dataset.poi_id : false,
