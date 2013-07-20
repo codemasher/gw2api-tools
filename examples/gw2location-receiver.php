@@ -29,7 +29,7 @@ if(isset($_POST['data']) && !empty($_POST['data'])){
 		intval($data['profession']),
 		$data['guild_id'],
 		$data['channel_id'],
-		intval($data['world_id']) < 0 ? 0 : intval($data['world_id']), // overflow servers return negative values (looks like garbage)
+		intval($data['world_id']) < 0 ? 0 : intval($data['world_id']), // overflow servers seem to return negative garbage values
 		$data['map_id'],
 		$data['avatar_position'][0],
 		$data['avatar_position'][1],
@@ -48,13 +48,15 @@ if(isset($_POST['data']) && !empty($_POST['data'])){
 	array_unshift($references, 'sssissiiddii');
 
 	// prepare the SQL statement
-	$sql = 'REPLACE INTO `gw2_player_pos` (`player_uid`, `acc_name`, `char_name`, `profession` , `guild_id`, `guild_secret`, `world_id`, `map_id`, `pos_x`, `pos_y`, `pos_angle`, `pos_time`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+	$sql = 'REPLACE INTO `gw2_player_pos` (`player_uid`, `acc_name`, `char_name`, `profession` , `guild_id`, `guild_secret`, `world_id`, `map_id`, `pos_x`, `pos_y`, `pos_angle`, `pos_time`)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 	$stmt = mysqli_prepare($db, $sql);
 
 	// bind the params to $stmt and execute
 	call_user_func_array([$stmt, 'bind_param'], $references);
 	mysqli_stmt_execute($stmt);
 
+	// the location sender will print the raw response text in it's log
 	print_r($data);
 }
 
