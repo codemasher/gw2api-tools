@@ -79,8 +79,9 @@ var GW2Maps = {
 				return "https://tiles.guildwars2.com/"+mapobject.map.getMapTypeId()+"/1/"+zoom+"/"+coords.x+"/"+coords.y+".jpg";
 			},
 			tile_size = new google.maps.Size(256,256),
+		// TODO: i18n
 			tyria = new google.maps.ImageMapType({maxZoom: 7, alt: "Tyria", name: "Tyria", tileSize: tile_size, getTileUrl: get_tile}),
-			mists = new google.maps.ImageMapType({maxZoom: 6, alt: "Die Nebel", name: "Die Nebel", tileSize: tile_size, getTileUrl: get_tile}),
+			mists = new google.maps.ImageMapType({maxZoom: 6, alt: "The Mists", name: "The Mists", tileSize: tile_size, getTileUrl: get_tile}),
 			max_bounds = new google.maps.LatLngBounds(p2ll([0, (1<<options.max_zoom)*256]), p2ll([(1<<options.max_zoom)*256, 0]));
 
 		mapobject.map.mapTypes.set("1",tyria);
@@ -88,7 +89,7 @@ var GW2Maps = {
 
 		// first lets prepare our container
 		if(options.linkbox){
-			// oh, we want a list containing a list of points - no problem! we'll wrap the map container with a table like construct.
+			// oh, we want a box containing a list of points - no problem! we'll wrap the map container with a table like construct.
 			var map_cell = new Element("div", {"class": "table-cell"}).setStyle({"width": "100%"});
 			container.setStyle({"width": "100%", "height": options.height}).wrap(map_cell).wrap(new Element("div",{"class": "table-row"}).setStyle({"width": options.width}));
 			map_cell.insert({after:mapobject.linkbox.wrap(new Element("div", {"class": "table-cell"}))});
@@ -115,7 +116,6 @@ var GW2Maps = {
 				mapobject.map.panTo(new google.maps.LatLng(lat,lng));
 			}
 		});
-
 
 		// return the mapobject for later use
 		return mapobject;
