@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Guild Wars 2 Maps API Location tracker</title>
+	<link rel="stylesheet" href="https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia.css" />
+	<link rel="stylesheet" href="https://d1h9a8s8eodvjz.cloudfront.net/fonts/menomonia/08-02-12/menomonia-italic.css" />
+	<link rel="stylesheet" href="../css/gw2maps.css" />
+	<style type="text/css">
+		#players > div{
+			padding: 0.1em;
+			text-align: left;
+			font-size: 20px;
+			cursor: pointer;
+		}
+		#players img{
+			margin: 0 0.25em;
+		}
+	</style>
+</head>
+<body>
+<div class="gw2map" data-width="100" data-w_percent="1" data-height="100" data-h_percent="1" data-continent_id="1" data-floor_id="1"></div>
+<div style="position: absolute; top: 30px; right: 5px; padding: 0.5em; width: 18em; background-color: rgba(255,255,255,0.5); text-align: center;">
+	<label for="key">channel key </label><input id="key" type="text" placeholder="your channel key" value="" style="width: 7em;" />
+	<div><a id="toggle_players" href="#">toggle playerlist</a></div>
+	<div id="players" style="overflow-y: scroll;display:block;"></div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js"></script>
+<script src="https://maps.google.com/maps/api/js?sensor=false"></script>
+
+<script src="../js/gw2location-gmaps.js"></script>
+<script>
+	document.observe("dom:loaded",function(){
+		GW2Locator();
+	});
+</script>
+</body>
+</html>
