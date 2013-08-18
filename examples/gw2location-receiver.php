@@ -25,15 +25,15 @@ if(isset($_POST['data']) && !empty($_POST['data'])){
 		exit('json error');
 	}
 
-	//check for illegal characters in the account name
+	// check for illegal characters in the account name
 	preg_match('#(?P<name>^[a-z\s]+.[\d]{4}$)#i', $data['account_name'], $pcre_acc);
 	if(empty($pcre_acc)){
 		// we need a valid account name to work - so exit here if it doesn't match because it's possibly a hacking attempt
-		exit('invalid characters in the account name');
+		exit('invalid account name');
 	}
 
 	// check the length of the charname
-	if(strlen($data['character_data']['name']) > 19){
+	if(mb_strlen($data['character_data']['name']) > 19){
 		// everything > 19 bytes is possibly a hacking attempt due to ArenaNet's naming guidelines
 		exit('charname too long');
 	}
@@ -46,11 +46,11 @@ if(isset($_POST['data']) && !empty($_POST['data'])){
 		exit('invalid characters in the charname');
 	}
 
-	//check the guild id if it's not empty
+	// check the guild id if it's not empty
 	if(!empty($data['guild_id'])){
 		preg_match('#(?P<id>^[a-f\d]{8}-(:?[a-f\d]{4}-){3}[a-f\d]{12}$)#i', $data['guild_id'], $pcre_guild);
 		if(empty($pcre_guild)){
-			// if the guild id does't match, it's possibly a hacking attempt. surprisingly.
+			// if the guild id doesn't match, it's possibly a hacking attempt. surprisingly.
 			exit('invalid guild id');
 		}
 	}
@@ -112,5 +112,8 @@ if(isset($_POST['data']) && !empty($_POST['data'])){
 	// the location sender will print the raw response text in it's log
 	print_r($data);
 }
-
+// anything else is an invalid request
+else{
+	exit('invalid request');
+}
 ?>
