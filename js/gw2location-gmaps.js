@@ -2,7 +2,7 @@
  * gw2Maps.js
  * created: 21.06.13
  *
- * Awesome GW2 maps by Smiley
+ * GW2 Location by Smiley
  *
  * based on Cliff's example
  * http://jsfiddle.net/cliff/CRRGC/
@@ -12,14 +12,7 @@
  *
  * requires:
  *
- * - array_multisort and intval from phpjs (included)
- *
- *
- * TODO
- *
- * switch floors for maps with multiple floors e.g. like Rata Sum
- *
- *
+ * - intval from phpjs (included)
  */
 
 // Enable XSS... errr... CORS for Prototype: http://kourge.net/node/131
@@ -38,6 +31,7 @@ Ajax.Responders.register({
 		});
 	}
 });
+
 
 var GW2Maps = {
 	init: function(container){
@@ -70,16 +64,17 @@ var GW2Maps = {
 				}),
 				layers: {},
 				markers: {},
-				popups: []
+				popups: [],
+				options: options
 			},
 			get_tile = function(coords,zoom){
 				if(coords.y < 0 || coords.x < 0 || coords.y >= (1 << zoom) || coords.x >= (1 << zoom)){
-					return "http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png";
+					return options.i18n.errortile;
 				}
 				return "https://tiles.guildwars2.com/"+mapobject.map.getMapTypeId()+"/1/"+zoom+"/"+coords.x+"/"+coords.y+".jpg";
 			},
 			tile_size = new google.maps.Size(256,256),
-		// TODO: i18n
+			// TODO: i18n
 			tyria = new google.maps.ImageMapType({maxZoom: 7, alt: "Tyria", name: "Tyria", tileSize: tile_size, getTileUrl: get_tile}),
 			mists = new google.maps.ImageMapType({maxZoom: 6, alt: "The Mists", name: "The Mists", tileSize: tile_size, getTileUrl: get_tile}),
 			max_bounds = new google.maps.LatLngBounds(p2ll([0, (1<<options.max_zoom)*256]), p2ll([(1<<options.max_zoom)*256, 0]));
@@ -87,17 +82,7 @@ var GW2Maps = {
 		mapobject.map.mapTypes.set("1",tyria);
 		mapobject.map.mapTypes.set("2",mists);
 
-		// first lets prepare our container
-		if(options.linkbox){
-			// oh, we want a box containing a list of points - no problem! we'll wrap the map container with a table like construct.
-			var map_cell = new Element("div", {"class": "table-cell"}).setStyle({"width": "100%"});
-			container.setStyle({"width": "100%", "height": options.height}).wrap(map_cell).wrap(new Element("div",{"class": "table-row"}).setStyle({"width": options.width}));
-			map_cell.insert({after:mapobject.linkbox.wrap(new Element("div", {"class": "table-cell"}))});
-		}
-		else{
-			// just set the map container to the given size
-			container.setStyle({"width": options.width, "height": options.height});
-		}
+		container.setStyle({"width": "100%", "height": "100%"});
 
 		// lock panning
 		google.maps.event.addListener(mapobject.map, "center_changed", function(){
@@ -120,7 +105,6 @@ var GW2Maps = {
 		// return the mapobject for later use
 		return mapobject;
 	},
-
 
 	/**
 	 *
@@ -208,7 +192,7 @@ var GW2Maps = {
 			width: typeof dataset.width === "number" && dataset.width > 0 ? dataset.width+(dataset.w_percent == true ? "%" : "px") : "800px",
 			height: typeof dataset.height === "number" && dataset.height > 0 ? dataset.height+(dataset.h_percent == true ? "%" : "px") : "450px",
 			map_controls: dataset.disable_controls != true,
-			linkbox: typeof dataset.linkbox === "number" && dataset.linkbox >= 100 ? dataset.linkbox+"px" : false,
+			linkbox: false,
 			polyline: dataset.polyline && dataset.polyline.length > 7 ? dataset.polyline : false,
 			i18n: typeof dataset.language === "number" && dataset.language >=1 && dataset.language <= 4 ? GW2Maps.i18n[lang[dataset.language]] : GW2Maps.i18n[lang[0]]
 		};
@@ -237,7 +221,18 @@ var GW2Maps = {
 			task: "Aufgaben",
 			vista: "Aussichtspunkte",
 			waypoint: "Wegpunkte",
-			attribution: "Kartendaten und -bilder"
+			attribution: "Kartendaten und -bilder",
+			professions:{
+				0: {name: "Unbekannt", icon: "http://wiki-de.guildwars2.com/images/c/ce/Allgemein_Icon.png"},
+				1: {name: "Wächter", icon: "http://wiki-de.guildwars2.com/images/f/f4/Wächter_Icon.png"},
+				2: {name: "Krieger", icon: "http://wiki-de.guildwars2.com/images/9/90/Krieger_Icon.png"},
+				3: {name: "Ingenieur", icon: "http://wiki-de.guildwars2.com/images/c/c9/Ingenieur_Icon.png"},
+				4: {name: "Waldläufer", icon: "http://wiki-de.guildwars2.com/images/5/5e/Waldläufer_Icon.png"},
+				5: {name: "Dieb", icon: "http://wiki-de.guildwars2.com/images/0/07/Dieb_Icon.png"},
+				6: {name: "Elementarmagier", icon: "http://wiki-de.guildwars2.com/images/b/b4/Elementarmagier_Icon.png"},
+				7: {name: "Mesmer", icon: "http://wiki-de.guildwars2.com/images/0/05/Mesmer_Icon.png"},
+				8: {name: "Nekromant", icon: "http://wiki-de.guildwars2.com/images/2/23/Nekromant_Icon.png"}
+			}
 		},
 		en: {
 			lang: "en",
@@ -258,7 +253,18 @@ var GW2Maps = {
 			task: "Tasks",
 			vista: "Vistas",
 			waypoint: "Waypoints",
-			attribution: "Map data and imagery"
+			attribution: "Map data and imagery",
+			professions:{
+				0: {name: "Unknown", icon: "http://wiki-de.guildwars2.com/images/c/ce/Allgemein_Icon.png"},
+				1: {name: "Guardian", icon: "http://wiki-de.guildwars2.com/images/f/f4/Wächter_Icon.png"},
+				2: {name: "Warrior", icon: "http://wiki-de.guildwars2.com/images/9/90/Krieger_Icon.png"},
+				3: {name: "Engineer", icon: "http://wiki-de.guildwars2.com/images/c/c9/Ingenieur_Icon.png"},
+				4: {name: "Ranger", icon: "http://wiki-de.guildwars2.com/images/5/5e/Waldläufer_Icon.png"},
+				5: {name: "Thief", icon: "http://wiki-de.guildwars2.com/images/0/07/Dieb_Icon.png"},
+				6: {name: "Elementalist", icon: "http://wiki-de.guildwars2.com/images/b/b4/Elementarmagier_Icon.png"},
+				7: {name: "Mesmer", icon: "http://wiki-de.guildwars2.com/images/0/05/Mesmer_Icon.png"},
+				8: {name: "Necromancer", icon: "http://wiki-de.guildwars2.com/images/2/23/Nekromant_Icon.png"}
+			}
 		},
 		// TODO add es & fr language snippets, es icons
 		es: {
@@ -280,7 +286,18 @@ var GW2Maps = {
 			task: "task-es",
 			vista: "vista-es",
 			waypoint: "waypoint-es",
-			attribution: "attribution-es"
+			attribution: "attribution-es",
+			professions:{
+				0: {name: "Unknown", icon: "http://wiki-de.guildwars2.com/images/c/ce/Allgemein_Icon.png"},
+				1: {name: "Guardian", icon: "http://wiki-de.guildwars2.com/images/f/f4/Wächter_Icon.png"},
+				2: {name: "Warrior", icon: "http://wiki-de.guildwars2.com/images/9/90/Krieger_Icon.png"},
+				3: {name: "Engineer", icon: "http://wiki-de.guildwars2.com/images/c/c9/Ingenieur_Icon.png"},
+				4: {name: "Ranger", icon: "http://wiki-de.guildwars2.com/images/5/5e/Waldläufer_Icon.png"},
+				5: {name: "Thief", icon: "http://wiki-de.guildwars2.com/images/0/07/Dieb_Icon.png"},
+				6: {name: "Elementalist", icon: "http://wiki-de.guildwars2.com/images/b/b4/Elementarmagier_Icon.png"},
+				7: {name: "Mesmer", icon: "http://wiki-de.guildwars2.com/images/0/05/Mesmer_Icon.png"},
+				8: {name: "Necromancer", icon: "http://wiki-de.guildwars2.com/images/2/23/Nekromant_Icon.png"}
+			}
 		},
 		fr: {
 			lang: "fr",
@@ -301,7 +318,18 @@ var GW2Maps = {
 			task: "Cœurs",
 			vista: "Panoramas",
 			waypoint: "Points de passage",
-			attribution: "attribution-fr"
+			attribution: "attribution-fr",
+			professions:{
+				0: {name: "Unknown", icon: "http://wiki-de.guildwars2.com/images/c/ce/Allgemein_Icon.png"},
+				1: {name: "Guardian", icon: "http://wiki-de.guildwars2.com/images/f/f4/Wächter_Icon.png"},
+				2: {name: "Warrior", icon: "http://wiki-de.guildwars2.com/images/9/90/Krieger_Icon.png"},
+				3: {name: "Engineer", icon: "http://wiki-de.guildwars2.com/images/c/c9/Ingenieur_Icon.png"},
+				4: {name: "Ranger", icon: "http://wiki-de.guildwars2.com/images/5/5e/Waldläufer_Icon.png"},
+				5: {name: "Thief", icon: "http://wiki-de.guildwars2.com/images/0/07/Dieb_Icon.png"},
+				6: {name: "Elementalist", icon: "http://wiki-de.guildwars2.com/images/b/b4/Elementarmagier_Icon.png"},
+				7: {name: "Mesmer", icon: "http://wiki-de.guildwars2.com/images/0/05/Mesmer_Icon.png"},
+				8: {name: "Necromancer", icon: "http://wiki-de.guildwars2.com/images/2/23/Nekromant_Icon.png"}
+			}
 		}
 	}
 };
@@ -329,262 +357,5 @@ var phpjs = {
 		else{
 			return 0;
 		}
-	},
-	array_multisort: function(arr){
-		var flags = {
-				'SORT_REGULAR': 16,
-				'SORT_NUMERIC': 17,
-				'SORT_STRING': 18,
-				'SORT_ASC': 32,
-				'SORT_DESC': 40
-			},
-		//argl = arguments.length,
-		//args = arguments,
-			sortArrsLength = 0,
-			sortArrs = [[]],
-			sortKeys = [[]],
-			sortFlag = [0],
-			g = 0,
-			i = 0,
-			j,// = 0
-			k = '',
-			l = 0,
-			thingsToSort = [],
-			vkey = 0,
-			zlast = null,
-			nLastSort = [],
-			lastSort = [],
-			lastSorts = [],
-			tmpArray = [],
-			elIndex = 0,
-			sortDuplicator = function(){//a, b
-				return nLastSort.shift();
-			},
-			sortFunctions = [
-				[
-					function(a, b){
-						lastSort.push(a > b ? 1 : (a < b ? -1 : 0));
-						return a > b ? 1 : (a < b ? -1 : 0);
-					},
-					function(a, b){
-						lastSort.push(b > a ? 1 : (b < a ? -1 : 0));
-						return b > a ? 1 : (b < a ? -1 : 0);
-					}
-				],
-				[
-					function(a, b){
-						lastSort.push(a-b);
-						return a-b;
-					},
-					function(a, b){
-						lastSort.push(b-a);
-						return b-a;
-					}
-				],
-				[
-					function(a, b){
-						lastSort.push((a+'') > (b+'') ? 1 : ((a+'') < (b+'') ? -1 : 0));
-						return (a+'') > (b+'') ? 1 : ((a+'') < (b+'') ? -1 : 0);
-					},
-					function(a, b){
-						lastSort.push((b+'') > (a+'') ? 1 : ((b+'') < (a+'') ? -1 : 0));
-						return (b+'') > (a+'') ? 1 : ((b+'') < (a+'') ? -1 : 0);
-					}
-				]
-			];
-
-		if(Object.prototype.toString.call(arr) === '[object Array]'){
-			sortArrs[0] = arr;
-		}
-		else if(arr && typeof arr === 'object'){
-			for(i in arr){
-				if(arr.hasOwnProperty(i)){
-					sortKeys[0].push(i);
-					sortArrs[0].push(arr[i]);
-				}
-			}
-		}
-		else{
-			return false;
-		}
-
-		var arrMainLength = sortArrs[0].length, sortComponents = [0, arrMainLength];
-
-		for(j = 1; j < arguments.length; j++){
-			if(Object.prototype.toString.call(arguments[j]) === '[object Array]'){
-				sortArrs[j] = arguments[j];
-				sortFlag[j] = 0;
-				if(arguments[j].length !== arrMainLength){
-					return false;
-				}
-			}
-			else if(arguments[j] && typeof arguments[j] === 'object'){
-				sortKeys[j] = [];
-				sortArrs[j] = [];
-				sortFlag[j] = 0;
-				for(i in arguments[j]){
-					if(arguments[j].hasOwnProperty(i)){
-						sortKeys[j].push(i);
-						sortArrs[j].push(arguments[j][i]);
-					}
-				}
-				if(sortArrs[j].length !== arrMainLength){
-					return false;
-				}
-			}
-			else if(typeof arguments[j] === 'string'){
-				var lFlag = sortFlag.pop();
-				if(typeof flags[arguments[j]] === 'undefined' || ((((flags[arguments[j]]) >>> 4)&(lFlag >>> 4)) > 0)){
-					return false;
-				}
-				sortFlag.push(lFlag+flags[arguments[j]]);
-			}
-			else{
-				return false;
-			}
-		}
-
-		for(i = 0; i !== arrMainLength; i++){
-			thingsToSort.push(true);
-		}
-
-		for(i in sortArrs){
-			if(sortArrs.hasOwnProperty(i)){
-				lastSorts = [];
-				tmpArray = [];
-				elIndex = 0;
-				nLastSort = [];
-				lastSort = [];
-
-				if(sortComponents.length === 0){
-					if(Object.prototype.toString.call(arguments[i]) === '[object Array]'){
-						arguments[i] = sortArrs[i]; // args -> arguments
-					}
-					else{
-						for(k in arguments[i]){
-							if(arguments[i].hasOwnProperty(k)){
-								delete arguments[i][k];
-							}
-						}
-						sortArrsLength = sortArrs[i].length;
-						for(j = 0, vkey = 0; j < sortArrsLength; j++){
-							vkey = sortKeys[i][j];
-							arguments[i][vkey] = sortArrs[i][j]; // args -> arguments
-						}
-					}
-					delete sortArrs[i];
-					delete sortKeys[i];
-					continue;
-				}
-
-				var sFunction = sortFunctions[(sortFlag[i]&3)][((sortFlag[i]&8) > 0) ? 1 : 0];
-
-				for(l = 0; l !== sortComponents.length; l += 2){
-					tmpArray = sortArrs[i].slice(sortComponents[l], sortComponents[l+1]+1);
-					tmpArray.sort(sFunction);
-					lastSorts[l] = [].concat(lastSort); // Is there a better way to copy an array in Javascript?
-					elIndex = sortComponents[l];
-					for(g in tmpArray){
-						if(tmpArray.hasOwnProperty(g)){
-							sortArrs[i][elIndex] = tmpArray[g];
-							elIndex++;
-						}
-					}
-				}
-
-				sFunction = sortDuplicator;
-				for(j in sortArrs){
-					if(sortArrs.hasOwnProperty(j)){
-						if(sortArrs[j] === sortArrs[i]){
-							continue;
-						}
-						for(l = 0; l !== sortComponents.length; l += 2){
-							tmpArray = sortArrs[j].slice(sortComponents[l], sortComponents[l+1]+1);
-							nLastSort = [].concat(lastSorts[l]); // alert(l + ':' + nLastSort);
-							tmpArray.sort(sFunction);
-							elIndex = sortComponents[l];
-							for(g in tmpArray){
-								if(tmpArray.hasOwnProperty(g)){
-									sortArrs[j][elIndex] = tmpArray[g];
-									elIndex++;
-								}
-							}
-						}
-					}
-				}
-
-				for(j in sortKeys){
-					if(sortKeys.hasOwnProperty(j)){
-						for(l = 0; l !== sortComponents.length; l += 2){
-							tmpArray = sortKeys[j].slice(sortComponents[l], sortComponents[l+1]+1);
-							nLastSort = [].concat(lastSorts[l]);
-							tmpArray.sort(sFunction);
-							elIndex = sortComponents[l];
-							for(g in tmpArray){
-								if(tmpArray.hasOwnProperty(g)){
-									sortKeys[j][elIndex] = tmpArray[g];
-									elIndex++;
-								}
-							}
-						}
-					}
-				}
-
-				zlast = null;
-				sortComponents = [];
-				for(j in sortArrs[i]){
-					if(sortArrs[i].hasOwnProperty(j)){
-						if(!thingsToSort[j]){
-							if((sortComponents.length&1)){
-								sortComponents.push(j-1);
-							}
-							zlast = null;
-							continue;
-						}
-						if(!(sortComponents.length&1)){
-							if(zlast !== null){
-								if(sortArrs[i][j] === zlast){
-									sortComponents.push(j-1);
-								}
-								else{
-									thingsToSort[j] = false;
-								}
-							}
-							zlast = sortArrs[i][j];
-						}
-						else{
-							if(sortArrs[i][j] !== zlast){
-								sortComponents.push(j-1);
-								zlast = sortArrs[i][j];
-							}
-						}
-					}
-				}
-
-				if(sortComponents.length&1){
-					sortComponents.push(j);
-				}
-				if(Object.prototype.toString.call(arguments[i]) === '[object Array]'){
-					arguments[i] = sortArrs[i]; // args -> arguments
-				}
-				else{
-					for(j in arguments[i]){
-						if(arguments[i].hasOwnProperty(j)){
-							delete arguments[i][j];
-						}
-					}
-
-					sortArrsLength = sortArrs[i].length;
-					for(j = 0, vkey = 0; j < sortArrsLength; j++){
-						vkey = sortKeys[i][j];
-						arguments[i][vkey] = sortArrs[i][j]; // args -> arguments
-					}
-
-				}
-				delete sortArrs[i];
-				delete sortKeys[i];
-			}
-		}
-		return true;
 	}
 };
