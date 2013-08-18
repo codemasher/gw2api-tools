@@ -70,6 +70,10 @@ if(isset($_POST['data']) && !empty($_POST['data'])){
 		$pcre_channel['id'] = '';
 	}
 
+	// prepare the SQL statement
+	$sql = 'REPLACE INTO `gw2_player_pos` (`player_uid`, `acc_name`, `char_name`, `profession`, `team_color`, `commander`, `guild_id`, `guild_secret`, `world_id`, `map_id`, `pos_x`, `pos_y`, `pos_angle`, `pos_time`)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+
 	// prepare values
 	// keep in mind, that you may receive postdata from anywhere, not just the location sender, so sanitize your data!
 	$values = [
@@ -90,24 +94,8 @@ if(isset($_POST['data']) && !empty($_POST['data'])){
 		time()
 	];
 
-	// copy values to reference for bind_param's sake
-	// see: http://www.php.net/manual/en/mysqli-stmt.bind-param.php
-	$references = [];
-	foreach($values as $k => &$v) {
-		$references[$k] = &$v;
-	}
-
-	// add the datatypes to the top of the $references array
-	array_unshift($references, 'sssiiissiiddii');
-
-	// prepare the SQL statement
-	$sql = 'REPLACE INTO `gw2_player_pos` (`player_uid`, `acc_name`, `char_name`, `profession`, `team_color`, `commander`, `guild_id`, `guild_secret`, `world_id`, `map_id`, `pos_x`, `pos_y`, `pos_angle`, `pos_time`)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-	$stmt = mysqli_prepare($db, $sql);
-
-	// bind the params to $stmt and execute
-	call_user_func_array([$stmt, 'bind_param'], $references);
-	mysqli_stmt_execute($stmt);
+	// execute the statement
+	sql_query($sql, $values);
 
 	// the location sender will print the raw response text in it's log
 	print_r($data);
