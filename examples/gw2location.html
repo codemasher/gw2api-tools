@@ -60,7 +60,7 @@
 
 			new PeriodicalExecuter(function(){
 				new Ajax.Request("gw2location-ajax.php", {
-					parameters:{json:Object.toJSON({get: "playerdata", key: $("key").value, continent: m.map.getMapTypeId()})},
+					parameters:{json:Object.toJSON({get: "playerdata", key: phpjs.sha1($("key").value), continent: m.map.getMapTypeId()})},
 					onSuccess: function(request){
 						var check = [];
 						$H(request.responseJSON).each(function(p){

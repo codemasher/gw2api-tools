@@ -28,7 +28,7 @@ if(isset($_POST['json'])){
 				FROM `gw2_player_pos` AS t1, `gw2_maps` AS t2, `gw2_worlds` AS t3 WHERE t1.`guild_secret` = ? AND t2.`continent_id` = ? AND t2.`map_id` = t1.`map_id` AND t3.`world_id` = t1.`world_id`';
 
 		// fetch the result via the prepared statements wrapper
-		$result = sql_query($sql, [sha1($data['key']), intval($data['continent'])], false);
+		$result = sql_query($sql, [$data['key'], intval($data['continent'])], false);
 
 		$data = [];
 
@@ -46,18 +46,18 @@ if(isset($_POST['json'])){
 				$sql = 'SELECT `name`, `tag` FROM `gw2_guilds` WHERE `guild_id` = ? LIMIT 1';
 				$guild = sql_query($sql, [$r[3]]);
 				// guild not in DB? let's ask the API
-				if(!$guild || empty($guild)){
+				if(!$guild || empty($guild) || !is_array($guild)){
 					require_once '../inc/request.inc.php';
-					$g_data = gw2_api_request('guild_details.json?guild_id='.$r[3]);
-					if(is_array($g_data) && !in_array('error', $g_data)){
-						$guild = ['name' => $g_data['guild_name'], 'tag' => $g_data['tag']];
+					$g = gw2_api_request('guild_details.json?guild_id='.$r[3]);
+					if(is_array($g) && !in_array('error', $g)){
+						$guild = ['name' => $g['guild_name'], 'tag' => $g['tag']];
 						// while we're at it, we store that guild in the DB
 						$sql = 'INSERT INTO `gw2_guilds` (`guild_id`, `name`, `tag`, `emblem`) VALUES (?, ?, ?, ?)';
 						$values = [
-							$g_data['guild_id'],
-							$g_data['guild_name'],
-							$g_data['tag'],
-							isset($g_data['emblem']) && is_array($g_data['emblem']) ? json_encode($g_data['emblem']) : ''
+							$g['guild_id'],
+							$g['guild_name'],
+							$g['tag'],
+							isset($g['emblem']) && is_array($g['emblem']) ? json_encode($g['emblem']) : ''
 						];
 						sql_query($sql, $values);
 					}
