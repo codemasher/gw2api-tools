@@ -33,7 +33,7 @@ if(isset($_POST['data']) && !empty($_POST['data'])){
 	}
 
 	// check the length of the charname
-	if(mb_strlen($data['character_data']['name']) > 19){
+	if(mb_strlen($data['character_data']['name'], 'UTF-8') > 19){
 		// everything > 19 bytes is possibly a hacking attempt due to ArenaNet's naming guidelines
 		exit('charname too long');
 	}
