@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="de" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<title>GW2 Item Search</title>
+	<style>
+		/* css-tables */
+		.table-row { display:table; width:100%; }
+		.table-cell { display:table-cell; overflow:hidden; vertical-align:top; width:auto; padding:0.25em; }
+
+		/* search form */
+		#gw2_search { text-align:center; }
+		#search { font-size:2em; width:20em; }
+
+		/* result list */
+		#results { text-align:left; margin-top:1em; }
+		#resultlist { width:500px; overflow-x:auto;}
+		#resultlist > div { white-space:pre; cursor:pointer; }
+		#resultlist > div:hover { background-color:rgba(0,0,0,0.1); }
+		#details { padding-left:0.5em; }
+		.highlight{	color:red; background-color:rgba(0,0,0,0.2);}
+
+		/* pagination-links */
+		.p-links-container { line-height:1.25em; text-align:center; margin:1em 0; }
+		.p-links-container > a { text-decoration:none; }
+		.p-links { text-transform:uppercase; background-color:inherit; border: 1px solid #ccc; padding:1px 7px; margin:0 1px; }
+		.p-links:hover, .p-links:active { background-color:rgba(0,0,0,0.1); cursor:pointer; }
+		.p-prevnext { }
+		.p-middle { }
+		.p-current { background-color:rgba(0,0,0,0.2); }
+		.p-current:hover { cursor:default; }
+		.p-inactive { }
+		.p-inactive:hover { cursor:default; }
+	</style>
+</head>
+<body>
+	<form id="gw2_search">
+	<input id="search" type="search" placeholder="item search" /><br />
+	<span>
+		<img src="https://chillerlan.net/img/flags/de.png"><input type="radio" name="search_lang" value="de" checked="checked" />
+		<img src="https://chillerlan.net/img/flags/en.png"><input type="radio" name="search_lang" value="en" />
+		<img src="https://chillerlan.net/img/flags/es.png"><input type="radio" name="search_lang" value="es" />
+		<img src="https://chillerlan.net/img/flags/fr.png"><input type="radio" name="search_lang" value="fr" />
+	</span>
+	</form>
+	<div id="results"></div>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/scriptaculous/1.9.0/scriptaculous.js"></script>
+
+<script>
+	$("gw2_search").observe("submit", function(e){
+		Event.stop(e);
+		itemSearch(1);
+	});
+
+	$("search").observe("keyup", function(){
+		itemSearch(1);
+	});
+
+	function itemSearch(page){
+		new Ajax.Request("gw2itemsearch.php",{
+			method:"post",
+			// base64_encode the search string to not break umlauts, accented chars etc.
+			parameters:{search:Object.toJSON({str:base64_encode($("search").value), lang:$$("input[name=search_lang]:checked")[0].value, p:page})},
+			onSuccess:function(r){
+				$("results").update(r.responseText);
+				observeResults();
+			}
+		});
+	}
+
+	function observeResults(){
+		$$(".p-links").invoke("stopObserving").invoke("observe","click",function(e){
+			Event.stop(e);
+			itemSearch(this.dataset.page);
+		});
+		$("resultlist").childElements().invoke("stopObserving").invoke("observe", "click", function(){
+			new Ajax.Request("gw2itemsearch.php",{
+				parameters:{details:Object.toJSON({id:this.dataset.id, lang:$$("input[name=search_lang]:checked")[0].value})},
+				onSuccess: function(r){
+					$("details").update(r.responseText);
+					$$(".selectable").invoke("stopObserving").invoke("observe","click",function(){
+						this.select();
+					});
+				}
+			});
+		});
+	}
+
+	function base64_encode(data){
+		// http://phpjs.org/functions/base64_encode/
+		// http://kevin.vanzonneveld.net
+		// +   original by: Tyler Akins (http://rumkin.com)
+		// +   improved by: Bayron Guevara
+		// +   improved by: Thunder.m
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +   bugfixed by: Pellentesque Malesuada
+		// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		// +   improved by: Rafał Kukawski (http://kukawski.pl)
+		// *     example 1: base64_encode('Kevin van Zonneveld');
+		// *     returns 1: 'S2V2aW4gdmFuIFpvbm5ldmVsZA=='
+		// mozilla has this native
+		// - but breaks in 2.0.0.12!
+		//if (typeof this.window['btoa'] === 'function') {
+		//    return btoa(data);
+		//}
+		var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+			o1, o2, o3, h1, h2, h3, h4, bits, i = 0, ac = 0, enc, tmp_arr = [];
+
+		if(!data){
+			return data;
+		}
+
+		do{ // pack three octets into four hexets
+			o1 = data.charCodeAt(i++);
+			o2 = data.charCodeAt(i++);
+			o3 = data.charCodeAt(i++);
+
+			bits = o1 << 16|o2 << 8|o3;
+
+			h1 = bits >> 18&0x3f;
+			h2 = bits >> 12&0x3f;
+			h3 = bits >> 6&0x3f;
+			h4 = bits&0x3f;
+
+			// use hexets to index into b64, and append result to encoded string
+			tmp_arr[ac++] = b64.charAt(h1)+b64.charAt(h2)+b64.charAt(h3)+b64.charAt(h4);
+		}
+		while(i < data.length);
+
+		enc = tmp_arr.join('');
+
+		var r = data.length%3;
+
+		return (r ? enc.slice(0, r-3) : enc)+'==='.slice(r || 3);
+	}
+</script>
+</body>
+</html>
