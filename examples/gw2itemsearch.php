@@ -48,12 +48,12 @@ if(isset($_POST['search']) && !empty($_POST['search'])){
 		$values[] = $data['form']['rarity'];
 	}
 
-	if(isset($data['form']['min-level'])){
+	if(isset($data['form']['min-level']) && $data['form']['min-level'] !== ''){ // empty won't work because 0 counts as empty too
 		$where .= ' AND `level` >= ?';
 		$values[] = isset($data['form']['max-level']) && intval($data['form']['max-level']) < intval($data['form']['min-level']) ? intval($data['form']['max-level']) : intval($data['form']['min-level']);
 	}
 
-	if(isset($data['form']['max-level'])){
+	if(isset($data['form']['max-level']) && $data['form']['max-level'] !== ''){
 		$where .= ' AND `level` <= ?';
 		$values[] = isset($data['form']['min-level']) && intval($data['form']['min-level']) > intval($data['form']['max-level']) ? intval($data['form']['min-level']) : intval($data['form']['max-level']);
 	}
