@@ -19,9 +19,8 @@ if(isset($_POST['search']) && !empty($_POST['search'])){
 
 	// search text
 	$str = utf8_encode(base64_decode($data['str']));
-	$search = '%'.mb_strtolower($str).'%';
 
-	// language colum names (whitelist)
+	// language column names (whitelist)
 	$cols = [
 		'de' => 'name_de',
 		'en' => 'name_en',
@@ -30,11 +29,38 @@ if(isset($_POST['search']) && !empty($_POST['search'])){
 	];
 
 	// determine the correct language column / else set a default
-	$col = array_key_exists($data['lang'], $cols) ? $cols[$data['lang']] : 'name_de';
+	$col = array_key_exists($data['form']['lang'], $cols) ? $cols[$data['form']['lang']] : 'name_de';
+
+	// build the WHERE clause for the SQL statement and add the corresponding values to an array
+	$values = [];
+
+	// if the search string is integer, use the id column else the item name (is_int() doesn't work here!)
+	$where = check_int($str) ? '`item_id` LIKE ?' : 'LOWER(`'.$col.'`) LIKE ?';
+	$values[] = '%'.(check_int($str) ? intval($str) : mb_strtolower($str)).'%';
+
+	if(isset($data['form']['type']) && !empty($data['form']['type'])){
+		$where .= ' AND `type` = ?';
+		$values[] = $data['form']['type'];
+	}
+
+	if(isset($data['form']['rarity']) && !empty($data['form']['rarity'])){
+		$where .= ' AND `rarity` = ?';
+		$values[] = $data['form']['rarity'];
+	}
+
+	if(isset($data['form']['min-level'])){
+		$where .= ' AND `level` >= ?';
+		$values[] = isset($data['form']['max-level']) && intval($data['form']['max-level']) < intval($data['form']['min-level']) ? intval($data['form']['max-level']) : intval($data['form']['min-level']);
+	}
+
+	if(isset($data['form']['max-level'])){
+		$where .= ' AND `level` <= ?';
+		$values[] = isset($data['form']['min-level']) && intval($data['form']['min-level']) > intval($data['form']['max-level']) ? intval($data['form']['min-level']) : intval($data['form']['max-level']);
+	}
 
 	// first count the results to create the pagination
-	$sql = 'SELECT COUNT(*) FROM `gw2_items` WHERE LOWER(`'.$col.'`) LIKE ?';
-	$count = sql_query($sql, [$search], false);
+	$sql = 'SELECT COUNT(*) FROM `gw2_items` WHERE '.$where;
+	$count = sql_query($sql, $values, false);
 
 	// determine the current page number
 	$page = (isset($data['p']) && !empty($data['p']) && intval($data['p']) > 0) ? intval($data['p']) : 1;
@@ -47,16 +73,29 @@ if(isset($_POST['search']) && !empty($_POST['search'])){
 	$sql_start = (empty($pagination['pages']) || !isset($pagination['pages'][$page])) ? 0 : $pagination['pages'][$page];
 
 	// get the item result
-	$sql = 'SELECT `'.$col.'`, `item_id`, `level` FROM `gw2_items` WHERE LOWER(`'.$col.'`) LIKE ? ORDER BY `gw2_items`.`'.$col.'` LIMIT '.$sql_start.', '.$limit;
-	$result = sql_query($sql, [$search]);
+	$sql = 'SELECT `'.$col.'`, `item_id`, `level` FROM `gw2_items` WHERE '.$where.' ORDER BY `gw2_items`.`'.(check_int($str) ? 'item_id' : $col).'` LIMIT '.$sql_start.', '.$limit;
+	$result = sql_query($sql, $values);
 
 	// process the result
 	$list = '';
-	if(count($result) > 0){
+	if(is_array($result) && count($result) > 0){
 		foreach($result as $row){
 			// TODO: improve text highlighting
-			$list .= '<div data-id="'.$row['item_id'].'">'.(mb_strlen($str) > 0 ? mb_eregi_replace('('.$str.')', '<span class="highlight">\\1</span>', $row[$col]) : $row[$col]).' ('.$row['level'].')</div>';
+			$list .= '<div data-id="'.$row['item_id'].'">';
+			if(mb_strlen($str) > 0){
+				if(check_int($str)){
+					$list .= preg_replace('/('.$str.')/U', '<span class="highlight">$1</span>', $row['item_id']).': ';
+				}
+				$list .= mb_eregi_replace('('.$str.')', '<span class="highlight">\\1</span>', $row[$col]);
+			}
+			else{
+				$list .= $row[$col];
+			}
+			$list .= ' ('.$row['level'].')</div>';
 		}
+	}
+	else{
+		$list .= 'no results';
 	}
 
 	header('Content-type: text/html;charset=utf-8;');
@@ -79,25 +118,28 @@ else if(isset($_POST['details']) && !empty($_POST['details'])){
 	$response = '';
 	if(count($details) > 0){
 		$d = $details[0];
+		$n = "\n";
 		$flag_url = 'https://chillerlan.net/img/flags/';
-		$textarea = 'style="width:35em;" cols="20" rows="3" readonly="readonly" class="selectable"';
+		$icon_url = 'http://gw2wbot.darthmaim.de/icon/'.$d['signature'].'/'.$d['file_id'].'.png'; // https://render.guildwars2.com/file/
+		$textarea = 'cols="20" rows="3" readonly="readonly" class="selectable"';
 
 		// TODO: display item details, icon download, wikicode for recipes (or even full pages), list of ingredients
 		$response = '
 		<img src="'.$flag_url.'de.png"> <a href="http://wiki-de.guildwars2.com/wiki/'.str_replace(' ', '_', $d['name_de']).'" target="wiki-de">'.$d['name_de'].'</a><br />
-		<textarea '.$textarea.'>[[en:'.$d['name_en'].']]'."\n".'[[es:'.$d['name_es'].']]'."\n".'[[fr:'.$d['name_fr'].']]</textarea><br />
+		<textarea '.$textarea.'>[[en:'.$d['name_en'].']]'.$n.'[[es:'.$d['name_es'].']]'.$n.'[[fr:'.$d['name_fr'].']]</textarea><br />
 		<img src="'.$flag_url.'en.png"> <a href="http://wiki.guildwars2.com/wiki/'.str_replace(' ', '_', $d['name_en']).'" target="wiki-en">'.$d['name_en'].'</a><br />
-		<textarea '.$textarea.'>[[de:'.$d['name_de'].']]'."\n".'[[es:'.$d['name_es'].']]'."\n".'[[fr:'.$d['name_fr'].']]</textarea><br />
+		<textarea '.$textarea.'>[[de:'.$d['name_de'].']]'.$n.'[[es:'.$d['name_es'].']]'.$n.'[[fr:'.$d['name_fr'].']]</textarea><br />
 		<img src="'.$flag_url.'es.png"> <a href="http://wiki-es.guildwars2.com/wiki/'.str_replace(' ', '_', $d['name_es']).'" target="wiki-es">'.$d['name_es'].'</a><br />
-		<textarea '.$textarea.'>[[de:'.$d['name_de'].']]'."\n".'[[en:'.$d['name_en'].']]'."\n".'[[fr:'.$d['name_fr'].']]</textarea><br />
+		<textarea '.$textarea.'>[[de:'.$d['name_de'].']]'.$n.'[[en:'.$d['name_en'].']]'.$n.'[[fr:'.$d['name_fr'].']]</textarea><br />
 		<img src="'.$flag_url.'fr.png"> <a href="http://wiki-fr.guildwars2.com/wiki/'.str_replace(' ', '_', $d['name_fr']).'" target="wiki-fr">'.$d['name_fr'].'</a><br />
-		<textarea '.$textarea.'>[[de:'.$d['name_de'].']]'."\n".'[[en:'.$d['name_en'].']]'."\n".'[[es:'.$d['name_es'].']]</textarea><br />
+		<textarea '.$textarea.'>[[de:'.$d['name_de'].']]'.$n.'[[en:'.$d['name_en'].']]'.$n.'[[es:'.$d['name_es'].']]</textarea><br />
 		chat code<br />
-		<input type="text" readonly="readonly" style="width:35em;" value="'.item_code($d['item_id']).'" class="selectable" /><br />
+		<input type="text" readonly="readonly" value="'.item_code($d['item_id']).'" class="selectable" /><br />
 		item id<br />
-		<input type="text" readonly="readonly" style="width:35em;" value="'.$d['item_id'].'" class="selectable" /><br />
+		<input type="text" readonly="readonly" value="'.$d['item_id'].'" class="selectable" /><br />
 		icon<br />
-		...<br />
+		<img src="'.$icon_url.'"><br />
+		<input type="text" readonly="readonly" value="'.$icon_url.'" class="selectable" /><br />
 		';
 	}
 

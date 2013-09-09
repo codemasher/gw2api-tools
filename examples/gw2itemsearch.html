@@ -19,7 +19,8 @@
 		#resultlist > div { white-space:pre; cursor:pointer; }
 		#resultlist > div:hover { background-color:rgba(0,0,0,0.1); }
 		#details { padding-left:0.5em; }
-		.highlight{	color:red; background-color:rgba(0,0,0,0.2);}
+		.highlight { color:red; background-color:rgba(0,0,0,0.2);}
+		.selectable { width:35em; }
 
 		/* pagination-links */
 		.p-links-container { line-height:1.25em; text-align:center; margin:1em 0; }
@@ -35,19 +36,49 @@
 	</style>
 </head>
 <body>
-	<form id="gw2_search">
-	<input id="search" type="search" placeholder="item search" /><br />
+<form id="gw2_search">
+	<input id="search" name="search" type="search" placeholder="item search (name/id)" /><br />
 	<span>
-		<img src="https://chillerlan.net/img/flags/de.png"><input type="radio" name="search_lang" value="de" checked="checked" />
-		<img src="https://chillerlan.net/img/flags/en.png"><input type="radio" name="search_lang" value="en" />
-		<img src="https://chillerlan.net/img/flags/es.png"><input type="radio" name="search_lang" value="es" />
-		<img src="https://chillerlan.net/img/flags/fr.png"><input type="radio" name="search_lang" value="fr" />
+		<img src="https://chillerlan.net/img/flags/de.png"><input class="options" type="radio" name="lang" value="de" checked="checked" />
+		<img src="https://chillerlan.net/img/flags/en.png"><input class="options" type="radio" name="lang" value="en" />
+		<img src="https://chillerlan.net/img/flags/es.png"><input class="options" type="radio" name="lang" value="es" />
+		<img src="https://chillerlan.net/img/flags/fr.png"><input class="options" type="radio" name="lang" value="fr" />
 	</span>
-	</form>
-	<div id="results"></div>
+	<div>
+		Level: <input class="options" name="min-level" type="number" min="0" max="80" value="" placeholder="0" /> - <input class="options" name="max-level" type="number" min="0" max="80" value="" placeholder="80" />
+		<select class="options" name="type">
+			<option value="">-- type --</option>
+			<option value="Armor">Armor</option>
+			<option value="Back">Back</option>
+			<option value="Bag">Bag</option>
+			<option value="Consumable">Consumable</option>
+			<option value="Container">Container</option>
+			<option value="CraftingMaterial">CraftingMaterial</option>
+			<option value="Gathering">Gathering</option>
+			<option value="Gizmo">Gizmo</option>
+			<option value="MiniPet">MiniPet</option>
+			<option value="Tool">Tool</option>
+			<option value="Trinket">Trinket</option>
+			<option value="Trophy">Trophy</option>
+			<option value="UpgradeComponent">UpgradeComponent</option>
+			<option value="Weapon">Weapon</option>
+		</select>
+		<select class="options" name="rarity">
+			<option value="">-- rarity --</option>
+			<option value="Junk" style="color: #808080;">Junk</option>
+			<option value="Basic" style="color: #000000;">Basic</option>
+			<option value="Fine" style="color: #4f9dfe;">Fine</option>
+			<option value="Masterwork" style="color: #2dc50e;">Masterwork</option>
+			<option value="Rare" style="color: #f4c900;">Rare</option>
+			<option value="Exotic" style="color: #fda500;">Exotic</option>
+			<option value="Ascended" style="color: #fb3e8d;">Ascended</option>
+			<option value="Legendary" style="color: #800080;">Legendary</option>
+		</select>
+	</div>
+</form>
+<div id="results"></div>
 
-	<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
-
+<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js"></script>
 <script>
 	$("gw2_search").observe("submit", function(e){
 		Event.stop(e);
@@ -58,11 +89,15 @@
 		itemSearch(1);
 	});
 
+	$$(".options").invoke("observe", "change", function(){
+		itemSearch(1);
+	});
+
 	function itemSearch(page){
 		new Ajax.Request("gw2itemsearch.php",{
 			method:"post",
 			// base64_encode the search string to not break umlauts, accented chars etc.
-			parameters:{search:Object.toJSON({str:base64_encode($("search").value), lang:$$("input[name=search_lang]:checked")[0].value, p:page})},
+			parameters:{search:Object.toJSON({str:base64_encode($F("search")), form:$("gw2_search").serialize(true), p:page})},
 			onSuccess:function(r){
 				$("results").update(r.responseText);
 				observeResults();
@@ -71,16 +106,16 @@
 	}
 
 	function observeResults(){
-		$$(".p-links").invoke("stopObserving").invoke("observe","click",function(e){
+		$$(".p-links").invoke("stopObserving").invoke("observe","click", function(e){
 			Event.stop(e);
 			itemSearch(this.dataset.page);
 		});
 		$("resultlist").childElements().invoke("stopObserving").invoke("observe", "click", function(){
 			new Ajax.Request("gw2itemsearch.php",{
-				parameters:{details:Object.toJSON({id:this.dataset.id, lang:$$("input[name=search_lang]:checked")[0].value})},
+				parameters:{details:Object.toJSON({id:this.dataset.id, lang:$$("input[name=lang]:checked")[0].value})},
 				onSuccess: function(r){
 					$("details").update(r.responseText);
-					$$(".selectable").invoke("stopObserving").invoke("observe","click",function(){
+					$$(".selectable").invoke("stopObserving").invoke("observe", "click", function(){
 						this.select();
 					});
 				}
@@ -107,32 +142,22 @@
 		//}
 		var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
 			o1, o2, o3, h1, h2, h3, h4, bits, i = 0, ac = 0, enc, tmp_arr = [];
-
-		if(!data){
-			return data;
-		}
-
+		if(!data){return data;}
 		do{ // pack three octets into four hexets
 			o1 = data.charCodeAt(i++);
 			o2 = data.charCodeAt(i++);
 			o3 = data.charCodeAt(i++);
-
 			bits = o1 << 16|o2 << 8|o3;
-
 			h1 = bits >> 18&0x3f;
 			h2 = bits >> 12&0x3f;
 			h3 = bits >> 6&0x3f;
 			h4 = bits&0x3f;
-
 			// use hexets to index into b64, and append result to encoded string
 			tmp_arr[ac++] = b64.charAt(h1)+b64.charAt(h2)+b64.charAt(h3)+b64.charAt(h4);
 		}
 		while(i < data.length);
-
 		enc = tmp_arr.join('');
-
 		var r = data.length%3;
-
 		return (r ? enc.slice(0, r-3) : enc)+'==='.slice(r || 3);
 	}
 </script>

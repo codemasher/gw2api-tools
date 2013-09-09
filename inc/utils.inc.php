@@ -5,6 +5,19 @@
  */
 
 /**
+ * Check if a string is really int
+ * @kink http://php.net/manual/function.is-int.php#87670
+ *
+ * @param $val
+ *
+ * @return bool
+ */
+function check_int($val){
+	return ($val !== true) && ((string)(int)$val) === ((string)$val);
+}
+
+
+/**
  * Get the chatcode for an item
  *
  * @param int $item_id
@@ -83,6 +96,7 @@ function pagination($total, $start, $limit, $request = null, $firstpage = 1, $ad
 	for($i = 0, $j = $firstpage; $i < $total; $i += $limit, $j++){
 		//...and build some links in between
 		$pages['pages'][$j] = $i;
+		$href = ($request === null ? '#' : $request.$j.$ext);
 		//current page
 		if($j == $currentpage){
 			$pages['links'] .= '<span class="p-links p-current">'.$j.'</span>';
@@ -92,27 +106,27 @@ function pagination($total, $start, $limit, $request = null, $firstpage = 1, $ad
 		else if($j >= ($firstpage+$adjacents) && $j < ($currentpage-$adjacents_mid)){
 			//jump-to links between start and current page
 			if($j >= floor((($firstpage+$currentpage+$adjacents_mid)-$adjacents)/2)-$adjacents_jump && $j <= floor((($firstpage+$currentpage+$adjacents_mid)-$adjacents)/2)+$adjacents_jump){
-				$pages['links'] .= '<a class="p-links p-middle" href="'.($request === null ? '#' : $request.$j.$ext).'" data-page="'.$j.'">'.$j.'</a>';
+				$pages['links'] .= '<a class="p-links p-middle" href="'.$href.'" data-page="'.$j.'">'.$j.'</a>';
 			}
 			//spaces in between - we can hide them by adding a nodisplay style ;)
 #			else{
-#				$pages['links'] .= '<a class="p-links p-middle hidden" href="'.($request === null ? '#' : $request.$j.$ext).'" data-page="'.$j.'">'.$j.'</a>';
+#				$pages['links'] .= '<a class="p-links p-middle hidden" href="'.$href.'" data-page="'.$j.'">'.$j.'</a>';
 #			}
 		}
 		//pages between current and last
 		else if($j > ($currentpage+$adjacents_mid) && $j <= ($lastpage-$adjacents)){
 			//jump-to links between current and last page
 			if($j >= ceil((($lastpage+$currentpage+$adjacents_mid)-$adjacents)/2)-$adjacents_jump && $j <= ceil((($lastpage+$currentpage+$adjacents_mid)-$adjacents)/2)+$adjacents_jump){
-				$pages['links'] .= '<a class="p-links p-middle" href="'.($request === null ? '#' : $request.$j.$ext).'" data-page="'.$j.'">'.$j.'</a>';
+				$pages['links'] .= '<a class="p-links p-middle" href="'.$href.'" data-page="'.$j.'">'.$j.'</a>';
 			}
 			//spaces in between
 #			else{
-#				$pages['links'] .= '<a class="p-links p-middle hidden" href="'.($request === null ? '#' : $request.$j.$ext).'" data-page="'.$j.'">'.$j.'</a>';
+#				$pages['links'] .= '<a class="p-links p-middle hidden" href="'.$href.'" data-page="'.$j.'">'.$j.'</a>';
 #			}
 		}
 		//first/last page & adjacents
 		else{
-			$pages['links'] .= '<a class="p-links" href="'.($request === null ? '#' : $request.$j.$ext).'" data-page="'.$j.'">'.$j.'</a>';
+			$pages['links'] .= '<a class="p-links" href="'.$href.'" data-page="'.$j.'">'.$j.'</a>';
 		}
 	}
 	$pages['pagination'] = $pages['total'] > 1 ? '<div class="p-links-container">'.$pages['prev'].$pages['links'].$pages['next'].'</div>' : '';
