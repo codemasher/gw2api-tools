@@ -4,9 +4,6 @@
  * created: 05.06.13
  */
 
-/*
- * TODO
- */
 
 /**
  * A small function to request&receive data from the GW2 API.
@@ -14,11 +11,10 @@
  *
  * @param string $request
  *
- * @return array|bool|mixed
+ * @return array|bool
  */
 function gw2_api_request($request){
 	$url = parse_url('https://api.guildwars2.com/v1/'.$request);
-
 	// open the socket
 	if(!$fp = @fsockopen('ssl://'.$url['host'], 443, $errno, $errstr, 5)){
 		return false;
@@ -28,7 +24,7 @@ function gw2_api_request($request){
 
 	// prepare the request header...
 	$nl = "\r\n";
-	$header = 'GET '.$url['path'].'?'.$url['query'].' HTTP/1.1'.$nl.'Host: '.$url['host'].$nl.'Connection: Close'.$nl.$nl;
+	$header = 'GET '.$url['path'].(isset($url['query']) ? '?'.$url['query'] : '').' HTTP/1.1'.$nl.'Host: '.$url['host'].$nl.'Connection: Close'.$nl.$nl;
 
 	// ...and send it.
 	fwrite($fp, $header);
