@@ -25,7 +25,6 @@ if(!mysqli_set_charset($db, 'utf8')){
 	exit('Error loading character set utf8: '.mysqli_error($db));
 }
 
-
 /**
  * MySQLi prepared statements wrapper
  *
@@ -40,13 +39,13 @@ if(!mysqli_set_charset($db, 'utf8')){
 function sql_query($query, $values = [], $assoc = true){
 	global $db;
 	// no prepared statement, assumes clean/escaped SQL, not recommended for untrusted input
-	if(count($values) === 0){
+	if(!is_array($values) || count($values) === 0){
 		// catch possible errors
 		if(!$result = mysqli_query($db, $query)){
 			return false;
 		}
 		// ok, we have a result with one or more rows, loop out the rows and output as array
-		if(mysqli_num_rows($result) > 0){
+		if(!is_bool($result) && mysqli_num_rows($result) > 0){
 			$out = [];
 			while($r = ($assoc === true) ? mysqli_fetch_assoc($result) : mysqli_fetch_row($result)){
 				$out[] = $r;
@@ -63,10 +62,11 @@ function sql_query($query, $values = [], $assoc = true){
 		if(!$stmt = mysqli_prepare($db, $query)){
 			return false;
 		}
-		// copy values to reference
+		// copy values to reference for bind_param's sake
+		// see: http://www.php.net/manual/en/mysqli-stmt.bind-param.php
 		$references = [];
 		foreach($values as $k => &$v){
-			$references[$k] = &$v;
+			$references[$k] = & $v;
 		}
 		// just assume that all params are strings, works well on MySQL and SQLite
 		$types = str_repeat('s', count($references));
