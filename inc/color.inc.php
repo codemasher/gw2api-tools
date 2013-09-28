@@ -242,5 +242,124 @@ function hsl2rgb($hsl){
 	return [$r*255, $g*255, $b*255];
 }
 
+/**
+ * @param $rgb
+ *
+ * @return array
+ */
+function rgb2hsv($rgb){
+	$r = $rgb[0]/255;
+	$g = $rgb[1]/255;
+	$b = $rgb[2]/255;
+
+	$min = min($r, $g, $b);
+	$max = max($r, $g, $b);
+
+	switch($max){
+		case 0:
+			$h = $s = $v = 0;
+			break;
+		case $min:
+			$h = $s = 0;
+			$v = $max;
+			break;
+		default:
+			$delta = $max-$min;
+			if($r == $max){
+				$h = 0+($g-$b)/$delta;
+			}
+			elseif($g == $max){
+				$h = 2+($b-$r)/$delta;
+			}
+			else{
+				$h = 4+($r-$g)/$delta;
+			}
+			$h *= 60;
+			if($h < 0){
+				$h += 360;
+			}
+			$s = $delta/$max;
+			$v = $max;
+	}
+	return [$h, $s, $v];
+}
+
+/**
+ * @param $hsv
+ *
+ * @return array
+ */
+function hsv2rgb($hsv){
+	$h = $hsv[0];
+	$s = $hsv[1];
+	$v = $hsv[2];
+
+	if($s == 0){
+		$r = $g = $b = $v;
+	}
+	else{
+		$h /= 60;
+		$hi = floor($h);
+		$f = $h-$hi;
+		$p = ($v*(1-$s));
+		$q = ($v*(1-($f*$s)));
+		$t = ($v*(1-((1-$f)*$s)));
+
+		switch($hi){
+			case 0:
+				$r = $v;
+				$g = $t;
+				$b = $p;
+				break;
+			case 1:
+				$r = $q;
+				$g = $v;
+				$b = $p;
+				break;
+			case 2:
+				$r = $p;
+				$g = $v;
+				$b = $t;
+				break;
+			case 3:
+				$r = $p;
+				$g = $q;
+				$b = $v;
+				break;
+			case 4:
+				$r = $t;
+				$g = $p;
+				$b = $v;
+				break;
+			default:
+				$r = $v;
+				$g = $p;
+				$b = $q;
+				break;
+		}
+	}
+
+	return [intval($r*255+0.5),	intval($g*255+0.5),	intval($b*255+0.5)];
+}
+
+
+/**
+ * @param array $rgb
+ *
+ * @return string
+ */
+function rgb2hex($rgb) {
+	return sprintf('%02X%02X%02X', $rgb[0], $rgb[1], $rgb[2]);
+}
+
+/**
+ * @param string $hex
+ *
+ * @return array
+ */
+function hex2rgb($hex) {
+	$int = hexdec(str_replace('#','',$hex));
+	return [0xFF&($int>>0x10), 0xFF&($int>>0x8), 0xFF&$int];
+}
 
 ?>
