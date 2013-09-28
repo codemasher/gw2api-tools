@@ -1,6 +1,9 @@
 #gw2api-tools
 
 A collection of helpful stuff for use with the [GW2-API](https://forum-en.guildwars2.com/forum/community/api/API-Documentation).
+Note: this project has been split into multiple projects over time:
+- [Guild Wars 2 WikiMaps](https://github.com/codemasher/Guild-Wars-2-WikiMaps)
+- [GW2 Database](https://github.com/codemasher/gw2-database)
 
 ## Requirements
 - A local webserver like [XAMPP](http://www.apachefriends.org/xampp.html) is helpful ;)
@@ -18,12 +21,15 @@ There's actually no specific reason except for the [fancy javascript/perl style 
 ##Additional files
 - [Guild emblems](http://gw2.chillerlan.net/files/guild-emblems.zip)
 - [WvW map tiles and icons](http://gw2.chillerlan.net/files/wvw-maps.zip)
+- [GW2 Location sender (setup)](http://gw2.chillerlan.net/files/files/GW2LocationSender-setup.exe)
+For the C++ code of the GW2 Location sender hop over to [Heimdall's repo](https://gw2apicpp.codeplex.com/) at codeplex
 
 ##Thanks
 
 Thanks go out to the friendly and helpful [GW2 developer community](https://forum-en.guildwars2.com/forum/community/api/), especially for help, input and ideas:
 - Cliff Spradlin, ArenaNet Programmer
 - Dr Ishmael.9685
+- Heimdall.4510
 - Killer Rhino.6794
 - Moturdrn.2837
 - Think.8042
