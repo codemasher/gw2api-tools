@@ -69,8 +69,8 @@
 								var icon = {
 										anchor: new google.maps.Point(10,10) ,
 										path: "M 20,10 0,4 5,10 0,16 z",
-										fillColor: state[p.value.state],
-										fillOpacity:0.8,
+											fillColor: p.value.commander == true ? "dodgerblue" : state[p.value.state],
+											fillOpacity:0.8,
 										rotation:p.value.angle,
 										strokeColor: "#000"
 									},
