@@ -61,34 +61,34 @@
 					zoom: 3,
 					minZoom: 1,
 					maxZoom: 7,
-						center: new google.maps.LatLng(0, 0), // the center of the map
-						streetViewControl: false,
-						mapTypeId: "1", // the map type ID has to be string for gmaps' sake
-						mapTypeControlOptions: {
-							mapTypeIds: ["1", "2"] // 1 for tyria, 2 for the mists
-						}
+					center: new google.maps.LatLng(0, 0), // the center of the map
+					streetViewControl: false,
+					mapTypeId: "1", // the map type ID has to be string for gmaps' sake
+					mapTypeControlOptions: {
+						mapTypeIds: ["1","2"] // 1 for tyria, 2 for the mists
+					}
 				}),
-					/**
-					 * get the current max zoom of the mapobject
-					 * @returns {number}
-					 */
-							max_zoom = function(){
+				/**
+				 * get the current max zoom of the mapobject
+				 * @returns {number}
+				 */
+				max_zoom = function(){
 					return gmap.getMapTypeId() === "1" ? 7 : 6
 				},
-					/**
-					 * a shorthand for the latlng to point conversion
-					 * @param {google.maps.LatLng} latlng
-					 * @returns {google.maps.Point}
-					 */
-							ll2p = function(latlng){
+				/**
+				 * a shorthand for the latlng to point conversion
+				 * @param {google.maps.LatLng} latlng
+				 * @returns {google.maps.Point}
+				 */
+				ll2p = function(latlng){
 					return fromLatLngToPoint(latlng, max_zoom());
 				},
-					/**
-					 * same as before, just vice versa
-					 * @param {google.maps.Point} point
-					 * @returns {google.maps.LatLng}
-					 */
-							p2ll = function(point){
+				/**
+				 * same as before, just vice versa
+				 * @param {google.maps.Point} point
+				 * @returns {google.maps.LatLng}
+				 */
+				p2ll = function(point){
 					return fromPointToLatLng(point, max_zoom());
 				},
 					/**
@@ -97,34 +97,34 @@
 					 * @param zoom
 					 * @returns {string}
 					 */
-							get_tile = function(coords,zoom){
-						// this is the point where you might want to limit the tile range to the continent_rect given by the API
-						// tile range = 2^zoom = 1<<zoom (bit shift)
-						// see also:
-						// https://forum-en.guildwars2.com/forum/community/api/Map-tiles-service-intermittently-cutting-out/2398997
-						// https://gist.github.com/codemasher/75d8e1a24b2363cabebf
-						if(coords.y < 0 || coords.x < 0 || coords.y >= (1 << zoom) || coords.x >= (1 << zoom)){
+				get_tile = function(coords,zoom){
+					// this is the point where you might want to limit the tile range to the continent_rect given by the API
+					// tile range = 2^zoom = 1<<zoom (bit shift)
+					// see also:
+					// https://forum-en.guildwars2.com/forum/community/api/Map-tiles-service-intermittently-cutting-out/2398997
+					// https://gist.github.com/codemasher/75d8e1a24b2363cabebf
+					if(coords.y < 0 || coords.x < 0 || coords.y >= (1 << zoom) || coords.x >= (1 << zoom)){
 						return "http://wiki-de.guildwars2.com/images/6/6f/Kartenhintergrund.png";
 					}
 					return "https://tiles.guildwars2.com/"+gmap.getMapTypeId()+"/1/"+zoom+"/"+coords.x+"/"+coords.y+".jpg";
 				},
-			// map type definitions for tyria and the mists
-					tyria = new google.maps.ImageMapType({
+				// map type definitions for tyria and the mists
+				tyria = new google.maps.ImageMapType({
 					maxZoom: 7,
 					alt: "Tyria",
 					name: "Tyria",
-						tileSize: new google.maps.Size(256, 256),
-						getTileUrl: get_tile
+					tileSize: new google.maps.Size(256,256),
+					getTileUrl: get_tile
 				}),
 				mists = new google.maps.ImageMapType({
 					maxZoom: 6,
 					alt: "The Mists",
 					name: "The Mists",
-					tileSize: new google.maps.Size(256, 256),
+					tileSize: new google.maps.Size(256,256),
 					getTileUrl: get_tile
 				}),
-			// a popup to annoy people
-					popup = new google.maps.InfoWindow();
+				// a popup to annoy people
+				popup = new google.maps.InfoWindow();
 
 			// bind the map types to the map
 			gmap.mapTypes.set("1",tyria);
