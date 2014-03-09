@@ -4,6 +4,7 @@ A collection of helpful stuff for use with the [GW2-API](https://forum-en.guildw
 Note: this project has been split into multiple projects over time:
 - [Guild Wars 2 WikiMaps](https://github.com/codemasher/Guild-Wars-2-WikiMaps)
 - [GW2 Database](https://github.com/codemasher/gw2-database)
+- [GW2 WvW Stats](https://github.com/codemasher/gw2-wvwstats)
 
 ## Requirements
 - A local webserver like [XAMPP](http://www.apachefriends.org/xampp.html) is helpful ;)
@@ -12,7 +13,7 @@ Note: this project has been split into multiple projects over time:
 
 ###Why PHP 5.4+?
 There's actually no specific reason except for the [fancy javascript/perl style shorthand array syntax](http://php.net/manual/en/language.types.array.php). You're fine with 5.2 if you change that.
- 
+
 ##Installation
 - download the source and unzip it into a directory within your webroot
 - create tables in your database with the given SQL if needed
@@ -37,5 +38,5 @@ Thanks go out to the friendly and helpful [GW2 developer community](https://foru
 
 ##License
 
-This work is available under the [WTFPL](http://www.wtfpl.net/). 
+This work is available under the [WTFPL](http://www.wtfpl.net/).
 Graphics (c) [ArenaNet](http://www.guildwars2.com/).
