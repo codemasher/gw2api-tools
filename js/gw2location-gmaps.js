@@ -15,23 +15,29 @@
  * - intval from phpjs (included)
  */
 
-// Enable XSS... errr... CORS for Prototype: http://kourge.net/node/131
-// the console will tell you: Refused to get unsafe header "X-JSON"
+/**
+ * Enable XSS... errr... CORS for Prototype: http://kourge.net/node/131
+ */
 Ajax.Responders.register({
-	onCreate: function(response) {
-		var t = response.transport;
-		t.setRequestHeader = t.setRequestHeader.wrap(function(original, k, v) {
-			if (/^(accept|accept-language|content-language)$/i.test(k)){
+	onCreate: function(response){
+		//for PHPStorm's sake
+		//noinspection FunctionWithInconsistentReturnsJS
+		response.transport.setRequestHeader = response.transport.setRequestHeader.wrap(function(original, k, v){
+			if(/^(accept|accept-language|content-language)$/i.test(k) ||
+				(/^content-type$/i.test(k) && /^(application\/x-www-form-urlencoded|multipart\/form-data|text\/plain)(;.+)?$/i.test(v))){
 				return original(k, v);
 			}
-			if (/^content-type$/i.test(k) && /^(application\/x-www-form-urlencoded|multipart\/form-data|text\/plain)(;.+)?$/i.test(v)){
-				return original(k, v);
-			}
-			return null;
+			//noinspection UnnecessaryReturnStatementJS
+			return;
 		});
 	}
 });
 
+/**
+ * Get rid of the message "Refused to get unsafe header X-JSON"
+ * https://gist.github.com/codemasher/8373493
+ */
+Ajax.Response.prototype._getHeaderJSON = Prototype.emptyFunction;
 
 var GW2Maps = {
 	init: function(container){
@@ -203,7 +209,7 @@ var GW2Maps = {
 	 */
 	i18n: {
 		de: {
-			lang: "de",
+			lang: "Deutsch",
 			wiki: "http://wiki-de.guildwars2.com/wiki/",
 			icon_event: {link: "http://wiki-de.guildwars2.com/images/7/7a/Event_Angriff_Icon.png", size: [24,24]},
 			icon_landmark: {link: "http://wiki-de.guildwars2.com/images/0/0f/Sehenswürdigkeit_Icon.png", size: [16,16]},
@@ -235,7 +241,7 @@ var GW2Maps = {
 			}
 		},
 		en: {
-			lang: "en",
+			lang: "English",
 			wiki: "http://wiki.guildwars2.com/wiki/",
 			icon_event: {link: "http://wiki-de.guildwars2.com/images/7/7a/Event_Angriff_Icon.png", size: [24,24]},
 			icon_landmark: {link: "http://wiki.guildwars2.com/images/f/fb/Point_of_interest.png", size: [20,20]},

@@ -1,11 +1,27 @@
 <?php
 /**
- * utils.inc.php
- * created: 07.09.13
+ * GW2 locationUtilities
+ *
+ * PHP version 5.4
+ *
+ * @category   gw2-api
+ * @package    gw2api-tools
+ * @subpackage Utilities
+ * @copyright  Copyright (c) 2013 Smiley (https://chillerlan.net/)
+ * @license    http://www.wtfpl.net/about/ WTFPL 2
+ * @version    0.1
+ * @link       https://github.com/codemasher/gw2api-tools gw2api-tools GitHub Repo
+ *
+ *
+ * @filesource utils.inc.php
+ * @created    07.09.13
+ * @author     Smiley <smiley@chillerlan.net>
  */
+
 
 /**
  * Check if a string is really int
+ *
  * @kink http://php.net/manual/function.is-int.php#87670
  *
  * @param $val
@@ -30,8 +46,22 @@ function item_code($item_id){
 
 
 /**
+ * The ugly coordinate recalculation
+ *
+ * @param array $cr continent_rect
+ * @param array $mr map_rect
+ * @param array $p point
+ *
+ * @return array point
+ */
+function recalc_coords($cr, $mr, $p){
+	// don't look at it. really! it will melt your brain and make your eyes bleed!
+	return [round($cr[0][0]+($cr[1][0]-$cr[0][0])*($p[0]-$mr[0][0])/($mr[1][0]-$mr[0][0])), round($cr[0][1]+($cr[1][1]-$cr[0][1])*(1-($p[1]-$mr[0][1])/($mr[1][1]-$mr[0][1])))];
+}
+
+
+/**
  * Creates pagination links for an array
- * (c) Smiley
  *
  * @param int    $total          total items
  * @param int    $start          start page

@@ -1,26 +1,46 @@
 <?php
 /**
- * gw2location-receiver.php
- * created: 06.07.13
- * by Smiley
- *
  * GW2 location provider backend: Location receiver
  *
- * Location sender by Heimdall.4510:
- * @link https://gw2apicpp.codeplex.com/ (source)
- * @link http://gw2.chillerlan.net/files/GW2LocationSender-setup.exe (binaries)
+ * PHP version 5.4
  *
+ * @category   gw2-api
+ * @package    gw2api-tools
+ * @subpackage Maps
+ * @copyright  Copyright (c) 2013 Smiley (https://chillerlan.net/)
+ * @license    http://www.wtfpl.net/about/ WTFPL 2
+ * @version    0.1
+ * @link       https://github.com/codemasher/gw2api-tools gw2api-tools GitHub Repo
+ * @link       https://gw2apicpp.codeplex.com Location sender by Heimdall.4510 (source)
+ * @link       http://gw2.chillerlan.net/files/GW2LocationSender-setup.exe Application installer created by Smiley (binaries)
+ *
+ *
+ * @filesource gw2location-receiver.php
+ * @created    06.07.13
+ * @author     Smiley <smiley@chillerlan.net>
+ */
+
+/*
  * TODO
  * check for existing id
  * REPLACE -> UPDATE
  * store a marker pos
  */
 
-require_once '../inc/mysqli.inc.php';
+// provide some backwards compatibility for php <5.3
+@ini_set('magic_quotes_runtime', 0);
 
+require_once '../inc/mysqli.inc.php';
+require_once '../inc/utils.inc.php';
+
+/**
+ * The GW2 location backend API
+ *
+ * @api        GW2 location backend
+ */
 // receive data from the location-sender
 if(isset($_POST['data']) && !empty($_POST['data'])){
-	// decode the json
+	// decode the json - you may want to do stripslashes before decoding if you can't override magic_quotes_gpc
 	if(!$data = json_decode($_POST['data'],1)){
 		exit('json error');
 	}
@@ -72,7 +92,7 @@ if(isset($_POST['data']) && !empty($_POST['data'])){
 
 	// prepare the SQL statement
 	$sql = 'REPLACE INTO `gw2_player_pos` (`player_uid`, `acc_name`, `char_name`, `profession`, `team_color`, `commander`, `guild_id`, `guild_secret`, `world_id`, `map_id`, `pos_x`, `pos_y`, `pos_angle`, `pos_time`)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
 	// prepare values
 	// keep in mind, that you may receive postdata from anywhere, not just the location sender, so sanitize your data!
@@ -125,8 +145,8 @@ else if(isset($_POST['json'])){
 
 	if($data['get'] === 'playerdata'){
 		// TODO: i18n
-		$sql = 'SELECT t1.`player_uid`, t1.`char_name`, t1.`profession`, t1.`guild_id`, t1.`commander`, t3.`name_en`, t2.`continent_id`, t2.`name_en`, t2.`map_id`, t1.`pos_x`, t1.`pos_y`, t1.`pos_angle`, t1.`pos_time`, t2.`continent_rect`, t2.`map_rect`
-				FROM `gw2_player_pos` AS t1, `gw2_maps` AS t2, `gw2_worlds` AS t3 WHERE t1.`guild_secret` = ? AND t2.`continent_id` = ? AND t2.`map_id` = t1.`map_id` AND t3.`world_id` = t1.`world_id`';
+		$sql = 'SELECT pos.`player_uid`, pos.`char_name`, pos.`profession`, pos.`guild_id`, pos.`commander`, world.`name_en`, map.`continent_id`, map.`name_en`, map.`map_id`, pos.`pos_x`, pos.`pos_y`, pos.`pos_angle`, pos.`pos_time`, map.`continent_rect`, map.`map_rect`
+			FROM `gw2_player_pos` AS pos, `gw2_maps` AS map, `gw2_worlds` AS world WHERE pos.`guild_secret` = ? AND map.`continent_id` = ? AND map.`map_id` = pos.`map_id` AND world.`world_id` = pos.`world_id`';
 
 		// fetch the result via the prepared statements wrapper
 		$result = sql_query($sql, [$data['key'], intval($data['continent'])], false);
@@ -179,7 +199,7 @@ else if(isset($_POST['json'])){
 				'commander' => $r[4],
 				'world' => $r[5],
 				'continent' => $r[6],
-				'map' => $r[7],
+				'map' => stripslashes($r[7]),
 				'map_id' => $r[8],
 				'pos' => recalc_coords(json_decode($r[13], 1), json_decode($r[14], 1), [$r[9], $r[10]]),
 				'angle' => $r[11] * -1,
@@ -206,10 +226,5 @@ else{
 }
 
 
-// the ugly coordinate recalculation
-function recalc_coords($cr, $mr, $p){
-	// don't look at it. really! it will melt your brain and make your eyes bleed!
-	return [round($cr[0][0]+($cr[1][0]-$cr[0][0])*($p[0]-$mr[0][0])/($mr[1][0]-$mr[0][0])), round($cr[0][1]+($cr[1][1]-$cr[0][1])*(1-($p[1]-$mr[0][1])/($mr[1][1]-$mr[0][1])))];
-}
 
 ?>

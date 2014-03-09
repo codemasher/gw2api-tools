@@ -59,7 +59,7 @@
 			});
 
 			new PeriodicalExecuter(function(){
-				new Ajax.Request("gw2location-ajax.php", {
+				new Ajax.Request("gw2location.php", {
 					parameters:{json:Object.toJSON({get: "playerdata", key: phpjs.sha1($("key").value), continent: m.map.getMapTypeId()})},
 					onSuccess: function(request){
 						var check = [];
@@ -75,7 +75,7 @@
 										strokeColor: "#000"
 									},
 									guild_tag = (p.value.guild.tag) ? " ["+p.value.guild.tag+"]" : "",
-								// popup content (i know, i can get that easier, but this looks cooler XD)
+									// popup content (i know, i can get that easier, but this looks cooler XD)
 									popup = new Element("table").insert(
 												new Element("tr").insert(
 													new Element("td", {"style":"width: 44px; text-align: center;"}).update(
@@ -89,7 +89,7 @@
 													new Element("td", {"colspan":2, "style":"text-align: center;"}).update(p.value.guild.name+guild_tag)
 												)
 											),
-								// playerlist content
+									// playerlist content
 									container = new Element("div").insert(
 													new Element("img", {"src": m.options.i18n.professions[p.value.profession].icon, "alt":p.value.charname, "style": "width:18px; height: 18px;"})
 												).insert(
