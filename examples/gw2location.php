@@ -4,6 +4,14 @@
  *
  * PHP version 5.4
  *
+ * you will need to create the following sql tables from /sql
+ *
+ * gw2_player_pos
+ * gw2_maps
+ * gw2_worlds
+ * gw2_guilds
+ *
+ *
  * @category   gw2-api
  * @package    gw2api-tools
  * @subpackage Maps
@@ -152,6 +160,14 @@ else if(isset($_POST['json'])){
 		$result = sql_query($sql, [$data['key'], intval($data['continent'])], false);
 
 		$data = [];
+
+		if(!is_array($result)){
+			// if you run into this error, you might have not the gw2_maps and gw2_worlds tables available
+			$err['error'] = 'playerdata select error.';
+			$err['msg'] = $result;
+			echo json_encode($err);
+			exit;
+		}
 
 		foreach($result as $r){
 			// add some player states
