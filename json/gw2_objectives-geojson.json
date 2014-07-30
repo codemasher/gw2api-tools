@@ -1,0 +1,1446 @@
+{"type": "FeatureCollection", "features": [
+	{
+		"type": "Feature",
+		"id": 1,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10766, 13656]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Aussichtspunkt",
+				"en": "Overlook",
+				"es": "Mirador",
+				"fr": "Belv\u00e9d\u00e8re"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 2,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11497, 15121]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Tal",
+				"en": "Valley",
+				"es": "Valle",
+				"fr": "Vall\u00e9e"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 3,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [9606, 15132]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Tiefland",
+				"en": "Lowlands",
+				"es": "Vega",
+				"fr": "Basses terres"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 4,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10211, 15437]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Golanta-Lichtung",
+				"en": "Golanta Clearing",
+				"es": "Claro Golanta",
+				"fr": "Clairi\u00e8re de Golanta"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 5,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11226, 13754]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Pangloss-Anh\u00f6he",
+				"en": "Pangloss Rise",
+				"es": "Colina Pangloss",
+				"fr": "Mont\u00e9e de Pangloss"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 6,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [9850, 13561]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Speldan Kahlschlag",
+				"en": "Speldan Clearcut",
+				"es": "Claro Espeldia",
+				"fr": "For\u00eat ras\u00e9e de Speldan"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 7,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11030, 15559]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Danelon-Passage",
+				"en": "Danelon Passage",
+				"es": "Pasaje Danelon",
+				"fr": "Passage Danelon"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 8,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11571, 14468]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Umberlichtung-Forst",
+				"en": "Umberglade Woods",
+				"es": "Bosques Clarosombra",
+				"fr": "Bois d'Ombreclair"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 9,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10608, 14583]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "castle",
+			"score": 35,
+			"name": {
+				"de": "Schloss Steinnebel",
+				"en": "Stonemist Castle",
+				"es": "Castillo Piedraniebla",
+				"fr": "Ch\u00e2teau Brumepierre"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 10,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [9574, 14435]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Schurkenbruch",
+				"en": "Rogue's Quarry",
+				"es": "Cantera del P\u00edcaro",
+				"fr": "Carri\u00e8re des voleurs"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 11,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [9416, 14793]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Aldons Vorsprung",
+				"en": "Aldon's Ledge",
+				"es": "Cornisa de Aldon",
+				"fr": "Corniche d'Aldon"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 12,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [9908, 14626]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Wildbachstrecke",
+				"en": "Wildcreek Run",
+				"es": "Pista Arroyosalvaje",
+				"fr": "Piste du Ruisseau sauvage"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 13,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [9807, 15409]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Jerrifers Sumpfloch",
+				"en": "Jerrifer's Slough",
+				"es": "Cenagal de Jerrifer",
+				"fr": "Bourbier de Jerrifer"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 14,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10172, 15082]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Klovan-Senke",
+				"en": "Klovan Gully",
+				"es": "Barranco Klovan",
+				"fr": "Petit ravin de Klovan"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 15,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11456, 15492]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Langor-Schlucht",
+				"en": "Langor Gulch",
+				"es": "Barranco Langor",
+				"fr": "Ravin de Langor"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 16,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10852, 15224]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Quentinsee",
+				"en": "Quentin Lake",
+				"es": "Lago Quentin",
+				"fr": "Lac Quentin"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 17,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10257, 13515]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Mendons Spalt",
+				"en": "Mendon's Gap",
+				"es": "Zanja de Mendon",
+				"fr": "Faille de Mendon"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 18,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10190, 14082]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Anzalias-Pass",
+				"en": "Anzalias Pass",
+				"es": "Paso Anzalias",
+				"fr": "Col d'Anzalias"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 19,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11012, 13849]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Ogerwacht-Kanal",
+				"en": "Ogrewatch Cut",
+				"es": "Tajo de la Guardia del Ogro",
+				"fr": "Perc\u00e9e de Gardogre"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 20,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11093, 13488]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Veloka-Hang",
+				"en": "Veloka Slope",
+				"es": "Pendiente Veloka",
+				"fr": "Flanc de Veloka"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 21,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11157, 14529]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Durios-Schlucht",
+				"en": "Durios Gulch",
+				"es": "Barranco Durios",
+				"fr": "Ravin de Durios"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 22,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11768, 14792]
+		},
+		"properties": {
+			"map": "Center",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Bravost-Abhang",
+				"en": "Bravost Escarpment",
+				"es": "Escarpadura Bravost",
+				"fr": "Falaise de Bravost"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 23,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [14058, 12432]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Festung",
+				"en": "Garrison",
+				"es": "Fuerte",
+				"fr": "Garnison"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 24,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [14084, 14041]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Landgut des Champions",
+				"en": "Champion's demense",
+				"es": "Dominio del Campe\u00f3n",
+				"fr": "Fief du champion"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 25,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [13750, 13344]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Rotdornstrauch",
+				"en": "Redbriar",
+				"es": "Zarzarroja",
+				"fr": "Bruyerouge"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 26,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [14582, 13410]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Gr\u00fcnsee",
+				"en": "Greenlake",
+				"es": "Lagoverde",
+				"fr": "Lac Vert"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 27,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [13036, 12956]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Bucht des Aufstiegs",
+				"en": "Ascension Bay",
+				"es": "Bah\u00eda de la Ascensi\u00f3n",
+				"fr": "Baie de l'Ascension"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 28,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [14686, 12030]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Horst der Morgend\u00e4mmerung",
+				"en": "Dawn's Eyrie",
+				"es": "Aguilera del Alba",
+				"fr": "Promontoire de l'aube"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 29,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [14088, 11227]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Der Geisterholm",
+				"en": "The Spiritholme",
+				"es": "La Isleta Espiritual",
+				"fr": "L'antre des esprits"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 30,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [13446, 12079]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Wald-Freistatt",
+				"en": "Woodhaven",
+				"es": "Refugio Forestal",
+				"fr": "Gentesylve"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 31,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [15253, 12882]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Askalion-H\u00fcgel",
+				"en": "Askalion Hills",
+				"es": "Colinas Askalion",
+				"fr": "Collines d'Askalion"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 32,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11669, 10959]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Etheron-H\u00fcgel",
+				"en": "Etheron Hills",
+				"es": "Colinas Etheron",
+				"fr": "Collines d'Etheron"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 33,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [9453, 11037]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Traumbucht",
+				"en": "Dreaming Bay",
+				"es": "Bah\u00eda On\u00edrica",
+				"fr": "Baie des r\u00eaves"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 34,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10497, 12119]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Sieger-H\u00fctte",
+				"en": "Victors's Lodge",
+				"es": "Albergue del Vencedor",
+				"fr": "Pavillon du vainqueur"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 35,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10167, 11423]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Gr\u00fcnstrauch",
+				"en": "Greenbriar",
+				"es": "Zarzaverde",
+				"fr": "Vertebranche"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 36,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10998, 11490]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Blausee",
+				"en": "Bluelake",
+				"es": "Lagoazul",
+				"fr": "Lac bleu"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 37,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10474, 10513]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Festung",
+				"en": "Garrison",
+				"es": "Fuerte",
+				"fr": "Garnison"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 38,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [9861, 10159]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Weitsicht",
+				"en": "Longview",
+				"es": "Vistaluenga",
+				"fr": "Longuevue"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 39,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10505, 9307]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Das Gottschwert",
+				"en": "The Godsword",
+				"es": "La Hoja Divina",
+				"fr": "L'Ep\u00e9e divine"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 40,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11102, 10113]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Felswand",
+				"en": "Cliffside",
+				"es": "Despe\u00f1adero",
+				"fr": "Flanc de falaise"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 41,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [8085, 13519]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Shadaran-H\u00fcgel",
+				"en": "Shadaran Hills",
+				"es": "Colinas Shadaran",
+				"fr": "Collines de Shadaran"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 42,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [7414, 14051]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Rotsee",
+				"en": "Redlake",
+				"es": "Lagorrojo",
+				"fr": "Rougelac"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 43,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [6911, 14679]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "H\u00fctte des Helden",
+				"en": "Hero's Lodge",
+				"es": "Albergue del H\u00e9roe",
+				"fr": "Pavillon du H\u00e9ros"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 44,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [5869, 13598]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Schreckensfall-Bucht",
+				"en": "Dreadfall Bay",
+				"es": "Bah\u00eda Salto Aciago",
+				"fr": "Baie du Noir d\u00e9clin"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 45,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [6584, 13983]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Blaudornstrauch",
+				"en": "Bluebriar",
+				"es": "Zarzazul",
+				"fr": "Bruyazur"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 46,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [6890, 13073]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "keep",
+			"score": 25,
+			"name": {
+				"de": "Festung",
+				"en": "Garrison",
+				"es": "Fuerte",
+				"fr": "Garnison"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 47,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [6279, 12719]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Sonnenlichth\u00fcgel",
+				"en": "Sunnyhill",
+				"es": "Colina Soleada",
+				"fr": "Colline ensoleill\u00e9e"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 48,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [6046, 12838]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Glaubenssprung",
+				"en": "Faithleap",
+				"es": "Salto de Fe",
+				"fr": "Ferveur"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 49,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [6107, 14092]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Blautal-Zuflucht",
+				"en": "Bluevale Refuge",
+				"es": "Refugio Valleazul",
+				"fr": "Refuge de bleubal"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 50,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11441, 11583]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Blauwasser-Tiefland",
+				"en": "Bluewater Lowlands",
+				"es": "Tierras Bajas de Aguazul",
+				"fr": "Basses terres d'Eau-Azur"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 51,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [11456, 10238]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Astralholm",
+				"en": "Astralholme",
+				"es": "Isleta Astral",
+				"fr": "Astralholme"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 52,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [9633, 10277]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Arahs Hoffnung",
+				"en": "Arah's Hope",
+				"es": "Esperanza de Arah",
+				"fr": "Espoir d'Arah"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 53,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [9692, 11535]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Gr\u00fcntal-Zuflucht",
+				"en": "Greenvale Refuge",
+				"es": "Refugio de Valleverde",
+				"fr": "Refuge de Valvert"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 54,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [7873, 12800]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Nebel-Freistatt",
+				"en": "Foghaven",
+				"es": "Refugio Neblinoso",
+				"fr": "Havre gris"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 55,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [7851, 14136]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Rotwasser-Tiefland",
+				"en": "Redwater Lowlands",
+				"es": "Tierras Bajas de Aguarroja",
+				"fr": "Basses terres de Rubicon"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 56,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [6920, 11867]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Die Titanenpranke",
+				"en": "The Titanpaw",
+				"es": "La Garra del Tit\u00e1n",
+				"fr": "Bras du titan"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 57,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [7517, 12673]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "tower",
+			"score": 10,
+			"name": {
+				"de": "Felsenspitze",
+				"en": "Cragtop",
+				"es": "Cumbrepe\u00f1asco",
+				"fr": "Sommet de l'escarpement"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 58,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [13210, 12208]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "G\u00f6tterkunde",
+				"en": "Godslore",
+				"es": "Sabidur\u00eda de los Dioses",
+				"fr": "Divination"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 59,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [13277, 13454]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Rottal-Zuflucht",
+				"en": "Redvale Refuge",
+				"es": "Refugio Vallerojo",
+				"fr": "Refuge de Valrouge"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 60,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [15037, 12151]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Sternenhain",
+				"en": "Stargrove",
+				"es": "Arboleda de las Estrellas",
+				"fr": "Bosquet stellaire"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 61,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [15023, 13504]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "camp",
+			"score": 5,
+			"name": {
+				"de": "Gr\u00fcnwasser-Tiefland",
+				"en": "Greenwater Lowlands",
+				"es": "Tierras Bajas de Aguaverde",
+				"fr": "Basses terres d'Eau-Verdoyante"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 62,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10484, 11421]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Tempel der Verlorenen Gebete",
+				"en": "Temple of Lost Prayers",
+				"es": "Templo de las Pelgarias",
+				"fr": "Temple des pri\u00e8res perdues"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 63,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10172, 11150]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Schlachten-Senke",
+				"en": "Battle's Hollow",
+				"es": "Hondonada de la Battalla",
+				"fr": "Vallon de bataille"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 64,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10279, 10787]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Bauers Anwesen",
+				"en": "Bauer's Estate",
+				"es": "Hacienda de Bauer",
+				"fr": "Domaine de Bauer"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 65,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10750, 10845]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Obstgarten-Aussichtspunkt",
+				"en": "Orchard Overlook",
+				"es": "Mirador del Huerto",
+				"fr": "Belv\u00e9d\u00e8re du Verger"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 66,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [10779, 11196]
+		},
+		"properties": {
+			"map": "RedHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Aufstieg des Schnitzers",
+				"en": "Carver's Ascent",
+				"es": "Ascenso del Trinchador",
+				"fr": "C\u00f4te du couteau"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 67,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [14363, 13110]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Aufstieg des Schnitzers",
+				"en": "Carver's Ascent",
+				"es": "Ascenso del Trinchador",
+				"fr": "C\u00f4te du couteau"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 68,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [14332, 12759]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Obstgarten-Aussichtspunkt",
+				"en": "Orchard Overlook",
+				"es": "Mirador del Huerto",
+				"fr": "Belv\u00e9d\u00e8re du Verger"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 69,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [13866, 12704]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Bauers Anwesen",
+				"en": "Bauer's Estate",
+				"es": "Hacienda de Bauer",
+				"fr": "Domaine de Bauer"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 70,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [13756, 13068]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Schlachten-Senke",
+				"en": "Battle's Hollow",
+				"es": "Hondonada de la Battalla",
+				"fr": "Vallon de bataille"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 71,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [14068, 13344]
+		},
+		"properties": {
+			"map": "BlueHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Tempel der Verlorenen Gebete",
+				"en": "Temple of Lost Prayers",
+				"es": "Templo de las Pelgarias",
+				"fr": "Temple des pri\u00e8res perdues"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 72,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [7196, 13754]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Aufstieg des Schnitzers",
+				"en": "Carver's Ascent",
+				"es": "Ascenso del Trinchador",
+				"fr": "C\u00f4te du couteau"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 73,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [7163, 13403]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Obstgarten-Aussichtspunkt",
+				"en": "Orchard Overlook",
+				"es": "Mirador del Huerto",
+				"fr": "Belv\u00e9d\u00e8re du Verger"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 74,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [6694, 13349]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Bauers Anwesen",
+				"en": "Bauer's Estate",
+				"es": "Hacienda de Bauer",
+				"fr": "Domaine de Bauer"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 75,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [6591, 13715]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Schlachten-Senke",
+				"en": "Battle's Hollow",
+				"es": "Hondonada de la Battalla",
+				"fr": "Vallon de bataille"
+			}
+		}
+	},
+	{
+		"type": "Feature",
+		"id": 76,
+		"geometry": {
+			"type": "Point",
+			"coordinates": [6899, 13987]
+		},
+		"properties": {
+			"map": "GreenHome",
+			"type": "ruin",
+			"score": 0,
+			"name": {
+				"de": "Tempel der Verlorenen Gebete",
+				"en": "Temple of Lost Prayers",
+				"es": "Templo de las Pelgarias",
+				"fr": "Temple des pri\u00e8res perdues"
+			}
+		}
+	}
+]}
