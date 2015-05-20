@@ -1,7 +1,7 @@
 [
 	{
 		"world_id": 1001,
-		"name_de": "Ambossfels",
+		"name_de": "Amboss-Stein",
 		"name_en": "Anvil Rock",
 		"name_es": "Roca del Yunque",
 		"name_fr": "Rocher de l'enclume"
@@ -15,14 +15,14 @@
 	},
 	{
 		"world_id": 1003,
-		"name_de": "Jakbiegung",
+		"name_de": "Yakbiegung",
 		"name_en": "Yak's Bend",
 		"name_es": "Declive del Yak",
 		"name_fr": "Courbe du Yak"
 	},
 	{
 		"world_id": 1004,
-		"name_de": "Denravis Erdwerk",
+		"name_de": "Steinkreis von Denravi",
 		"name_en": "Henge of Denravi",
 		"name_es": "Círculo de Denravi",
 		"name_fr": "Cromlech de Denravi"
@@ -39,11 +39,11 @@
 		"name_de": "Hochofen der Betrübnis",
 		"name_en": "Sorrow's Furnace",
 		"name_es": "Fragua del Pesar",
-		"name_fr": "Fournaise des lamentations"
+		"name_fr": "Fourneau des lamentations"
 	},
 	{
 		"world_id": 1007,
-		"name_de": "Tor des Irrsinns",
+		"name_de": "Tor des Wahnsinns",
 		"name_en": "Gate of Madness",
 		"name_es": "Puerta de la Locura",
 		"name_fr": "Porte de la folie"
@@ -108,7 +108,7 @@
 		"world_id": 1016,
 		"name_de": "Meer des Leids",
 		"name_en": "Sea of Sorrows",
-		"name_es": "El Mar de los Pesares",
+		"name_es": "Mar de los Pesares",
 		"name_fr": "Mer des lamentations"
 	},
 	{
@@ -155,7 +155,7 @@
 	},
 	{
 		"world_id": 1023,
-		"name_de": "Devonas Rast",
+		"name_de": "Devonas Ruh",
 		"name_en": "Devona's Rest",
 		"name_es": "Descanso de Devona",
 		"name_fr": "Repos de Devona"
@@ -169,7 +169,7 @@
 	},
 	{
 		"world_id": 2001,
-		"name_de": "Klagenriss",
+		"name_de": "Riss des Kummers",
 		"name_en": "Fissure of Woe",
 		"name_es": "Fisura de la Aflicción",
 		"name_fr": "Fissure du malheur"
@@ -190,7 +190,7 @@
 	},
 	{
 		"world_id": 2004,
-		"name_de": "Schwarzflut",
+		"name_de": "Schwarzwasser",
 		"name_en": "Blacktide",
 		"name_es": "Marea Negra",
 		"name_fr": "Noirflot"
@@ -199,7 +199,7 @@
 		"world_id": 2005,
 		"name_de": "Feuerring",
 		"name_en": "Ring of Fire",
-		"name_es": "Anillo de Fuego",
+		"name_es": "Anillo de fuego",
 		"name_fr": "Cercle de feu"
 	},
 	{
@@ -232,14 +232,14 @@
 	},
 	{
 		"world_id": 2010,
-		"name_de": "Seemannsrast",
+		"name_de": "Seemannsruh",
 		"name_en": "Seafarer's Rest",
 		"name_es": "Refugio del Viajante",
 		"name_fr": "Repos du Marin"
 	},
 	{
 		"world_id": 2011,
-		"name_de": "Vabbi",
+		"name_de": "Vaabi",
 		"name_en": "Vabbi",
 		"name_es": "Vabbi",
 		"name_fr": "Vabbi"
@@ -253,7 +253,7 @@
 	},
 	{
 		"world_id": 2013,
-		"name_de": "Lichtung der Morgenröte",
+		"name_de": "Auroralichtung",
 		"name_en": "Aurora Glade",
 		"name_es": "Claro de la Aurora",
 		"name_fr": "Clairière de l'aurore"
@@ -281,7 +281,7 @@
 	},
 	{
 		"world_id": 2103,
-		"name_de": "Augurenstein [FR]",
+		"name_de": "Fels der Weissagung [FR]",
 		"name_en": "Augury Rock [FR]",
 		"name_es": "Roca del Augurio [FR]",
 		"name_fr": "Roche de l'Augure [FR]"
@@ -295,7 +295,7 @@
 	},
 	{
 		"world_id": 2105,
-		"name_de": "Laubenstein [FR]",
+		"name_de": "Arborstein [FR]",
 		"name_en": "Arborstone [FR]",
 		"name_es": "Piedra Arbórea [FR]",
 		"name_fr": "Pierre Arborea [FR]"
@@ -316,14 +316,14 @@
 	},
 	{
 		"world_id": 2203,
-		"name_de": "Elonafels [DE]",
+		"name_de": "Elonaspitze [DE]",
 		"name_en": "Elona Reach [DE]",
 		"name_es": "Cañón de Elona [DE]",
 		"name_fr": "Bief d'Elona [DE]"
 	},
 	{
 		"world_id": 2204,
-		"name_de": "Abaddons Mund [DE]",
+		"name_de": "Abaddons Maul [DE]",
 		"name_en": "Abaddon's Mouth [DE]",
 		"name_es": "Boca de Abaddon [DE]",
 		"name_fr": "Bouche d'Abaddon [DE]"
@@ -351,7 +351,7 @@
 	},
 	{
 		"world_id": 2301,
-		"name_de": "Baruch-Bucht [SP]",
+		"name_de": "Baruch-Bucht [ES]",
 		"name_en": "Baruch Bay [SP]",
 		"name_es": "Bahía de Baruch [ES]",
 		"name_fr": "Baie de Baruch [SP]"
