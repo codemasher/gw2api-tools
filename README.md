@@ -1,5 +1,8 @@
 #gw2api-tools
 
+**NOTE: This repository is no longer maintained! Please use [GW2Treasures/gw2tools](https://github.com/GW2Treasures/gw2tools) instead. Thanks.**
+
+
 A collection of helpful stuff for use with the [GW2-API](https://forum-en.guildwars2.com/forum/community/api/API-Documentation).
 Note: this project has been split into multiple projects over time:
 - [Guild Wars 2 WikiMaps](https://github.com/codemasher/Guild-Wars-2-WikiMaps)
@@ -29,6 +32,7 @@ For the C++ code of the GW2 Location sender hop over to [Heimdall's repo](https:
 
 Thanks go out to the friendly and helpful [GW2 developer community](https://forum-en.guildwars2.com/forum/community/api/), especially for help, input and ideas:
 - Cliff Spradlin, ArenaNet Programmer
+- Darthmaim
 - Dr Ishmael.9685
 - Heimdall.4510
 - Killer Rhino.6794
